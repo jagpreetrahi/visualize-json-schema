@@ -14,7 +14,8 @@
     "@monaco-editor/react": "^4.7.0",
     "cytoscape": "^3.32.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
