@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://jagpreetrahi.github.io/visualize-json-schema",
+  "homepage": "https://jagpreetrahi.github.io/visualize-json-schema/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
