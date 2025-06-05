@@ -20,7 +20,7 @@ function Navbar() {
            </li>
           <li className="mt-1">
                 
-              <a href="" target="_blank" className="w-full  flex flex-row  items-center gap-1 sm:gap-2 sm:px-2 md:px-4 md:py-2 sm:py-1 text-sm sm:text-md  md:text-base  bg-blue-600  px-2 py-1  text-white rounded-md hover:bg-blue-700 transition-colors">
+              <a href="https://github.com/jagpreetrahi/visualize-json-schema" target="_blank" className="w-full  flex flex-row  items-center gap-1 sm:gap-2 sm:px-2 md:px-4 md:py-2 sm:py-1 text-sm sm:text-md  md:text-base  bg-blue-600  px-2 py-1  text-white rounded-md hover:bg-blue-700 transition-colors">
                     <FaGithub size={20}/>
                     Star on Github
               </a>
