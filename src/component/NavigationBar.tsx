@@ -2,7 +2,7 @@ import { IoIosSunny } from "react-icons/io";
 import { FaGithub } from "react-icons/fa";
  
 
-function Navbar() {
+function NavigationBar() {
   return (
 
     
@@ -30,4 +30,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export default NavigationBar;
