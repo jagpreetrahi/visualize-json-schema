@@ -23,7 +23,7 @@ function App() {
   }
 
   const togglebutton = (
-     <button onClick={ToggleScreen}><BsArrowsFullscreen size={25}/></button>
+     <button onClick={ToggleScreen} className="cursor-pointer"><BsArrowsFullscreen size={25}/></button>
   )
 
   useEffect(() => {
