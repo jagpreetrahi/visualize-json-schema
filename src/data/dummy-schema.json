@@ -1,0 +1,24 @@
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "age": 30,
+  "email": "john.doe@example.com",
+  "address": {
+    "street": "123 Main Street",
+    "city": "New York",
+    "state": "NY",
+    "postalCode": "10001"
+  },
+  "phoneNumbers": [
+    {
+      "type": "home",
+      "number": "555-1234"
+    },
+    {
+      "type": "mobile",
+      "number": "555-5678"
+    }
+  ],
+  "isActive": true,
+  "registeredDate": "2023-01-15"
+}

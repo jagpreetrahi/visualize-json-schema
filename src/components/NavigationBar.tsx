@@ -1,8 +1,13 @@
+import type React from "react";
 import { BsBrightnessHigh } from "react-icons/bs";
 import { FaGithub } from "react-icons/fa";
+
+interface NavigationProps{
+   togglebutton : React.ReactNode
+}
  
 
-function NavigationBar() {
+function NavigationBar({togglebutton} : NavigationProps) {
   return (
 
     
@@ -14,8 +19,13 @@ function NavigationBar() {
         <ul className="flex gap-2 mx-2 sm:gap-2 md:gap-4 list-none  sm:mr-4 md:mr-9">
           
           <li className="mt-1">
-                <button aria-label="Toggle Theme" className="text-2xl  md:text-3xl  hover:text-yellow-500 transition-colors">
+                <button aria-label="Toggle Theme" className="text-2xl  md:text-3xl py-1">
                    <BsBrightnessHigh />
+                </button>
+           </li>
+          <li className="mt-1">
+                <button aria-label="Toggle Screen" className="relative px-2 py-1 md:px-4 md:py-2 ">
+                   {togglebutton}
                 </button>
            </li>
           <li className="mt-1">
