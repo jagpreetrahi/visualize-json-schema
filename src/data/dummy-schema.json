@@ -1,24 +1,21 @@
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "age": 30,
-  "email": "john.doe@example.com",
-  "address": {
-    "street": "123 Main Street",
-    "city": "New York",
-    "state": "NY",
-    "postalCode": "10001"
-  },
-  "phoneNumbers": [
-    {
-      "type": "home",
-      "number": "555-1234"
+  
+  "title": "Person",
+  "type": "object",
+  "properties": {
+    "firstName": {
+      "type": "string",
+      "description": "The person's first name."
     },
-    {
-      "type": "mobile",
-      "number": "555-5678"
+    "lastName": {
+      "type": "string",
+      "description": "The person's last name."
+    },
+    "age": {
+      "description": "Age in years which must be equal to or greater than zero.",
+      "type": "integer",
+      "minimum": 0
     }
-  ],
-  "isActive": true,
-  "registeredDate": "2023-01-15"
+  }
 }
+
