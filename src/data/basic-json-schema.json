@@ -1,35 +1,35 @@
 [
     {
         "title": "What is JSON Schema",
-        "content": "JSON Schema is a vocabulary used to describe and validate the structure of JSON data. It defines what properties an object can have, their types, required fields, and more."
+        "description": "JSON Schema is a vocabulary used to describe and validate the structure of JSON data. It defines what properties an object can have, their types, required fields, and more."
     },
 
     {
         "title" : "Key Concepts",
-        "content" : [
+        "points" : [
             {
-            "term": "Type",
-            "definition": "Defines the data type (e.g., string, number, object, array)."
+            "term": "type",
+            "definition": "A preferably short description about the purpose of the instance described by the schema."
             },
             {
-            "term": "Properties",
+            "term": "properties",
             "definition": "Lists the fields inside an object, each with their own schema."
             },
             {
-            "term": "Required",
+            "term": "required",
             "definition": "Marks which fields must be present."
             },
             {
-            "term": "Description",
-            "definition": "Human-readable explanation of what a field represents."
+            "term": "description",
+            "definition": "An explanation about the purpose of the instance described by the schema."
             },
             {
-            "term": "Enum",
+            "term": "enum",
             "definition": "Defines a set of allowed values."
             },
             {
-            "term": "Format",
-            "definition": "Specifies additional constraints like email or date-time."
+            "term": "format",
+            "definition": "Define semantic information about a string instance."
             }
         ]
     }
