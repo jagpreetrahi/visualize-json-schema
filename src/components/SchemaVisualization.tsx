@@ -1,14 +1,12 @@
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre'
-import { useContext, useEffect, useRef } from 'react';
-import { MonacoEditorContext } from './../contexts/EditorContext';
-
+import React, {  useEffect, useRef } from 'react';
 cytoscape.use(dagre)
 
-export const SchemaVisualization = () => {
-  const { editorRef } = useContext(MonacoEditorContext);
+const SchemaVisualization = ({schema} : {schema : string}) => {
   const cyRef = useRef<HTMLDivElement>(null);
-
+  /* Does not get destroy or re-creating everytime the component updates */
+  const cyInstanceRef = useRef<cytoscape.Core | null>(null);
   // Types
   type CyNode = {
     data: {
@@ -19,6 +17,7 @@ export const SchemaVisualization = () => {
 
   type CyEdge = {
     data: {
+      id : string
       source: string;
       target: string;
     };
@@ -26,9 +25,14 @@ export const SchemaVisualization = () => {
 
   type CyElement = CyNode | CyEdge;
 
-  // JSON Schema to Cytoscape elements
+  /* Recursive function for storing the schema properties in the array of elements */ 
   function schemaParse( schema: any, parentId: string | null = null, elements: CyElement[] = [], path = 'root'): CyElement[] {
-    const nodeId = path;
+    const nodeId = path || `node-${Math.random().toString(36).substring(2, 8)}`;
+    if (!nodeId || typeof nodeId !== 'string') {
+      console.warn("Skipping invalid node ID", schema);
+      return elements;
+    }
+    /*pushing the nodes and edges to the elements array */
     elements.push({
       data: {
         id: nodeId,
@@ -37,8 +41,10 @@ export const SchemaVisualization = () => {
     });
 
     if (parentId) {
+      const edgeId = `${parentId}->${nodeId}`; // Unique ID format
       elements.push({
         data: {
+          id : edgeId,
           source: parentId,
           target: nodeId,
         },
@@ -55,62 +61,107 @@ export const SchemaVisualization = () => {
     }
 
     return elements;
+
   }
 
-  // run only when editorRef is available
+  // Initialize Cytoscape once on mount
   useEffect(() => {
-    const editorSchema = editorRef.current?.getValue();
-    if (!editorSchema || !cyRef.current) return;
-
-    try {
-      const parsedSchema = JSON.parse(editorSchema);
-      const elements = schemaParse(parsedSchema);
-
-      const cy = cytoscape({
-        container: cyRef.current,
-        elements,
-        userPanningEnabled: true,
+    if (!cyRef.current) return;
+    cyInstanceRef.current = cytoscape({
+      container: cyRef.current,
+      userPanningEnabled: true,
+      zoomingEnabled: true,
       panningEnabled: true,
       boxSelectionEnabled: false,
       autounselectify: true,
-        style: [
-          {
-            selector: 'node:hover',
-            style: {
-              content: 'data(label)',
-              'text-valign': 'center',
-              'background-color': '#007acc',
-               color: 'white',
-              'font-size': '10px',
-              'text-wrap': 'wrap',
-              
-            },
+      style: [
+        {
+          selector: 'node',
+          style: {
+            content: 'data(label)',
+            shape: 'roundrectangle',
+            'background-color': '#007acc',
+            color: '#fff',
+            'font-size': '7px',
+            'text-wrap': 'wrap',
+            'text-max-width': '100px',
+            'text-valign': 'center',
+            padding : '2px',
+            width: 'label',
+            height: 'label',
+            'min-width': '40px',
+            'min-height': '20px',
           },
-          {
-            selector: 'edge',
-            style: {
-              width: 2,
-              'line-color': '#ccc',
-              'target-arrow-color': '#ccc',
-              'target-arrow-shape': 'triangle',
-            },
-          },
-        ],
-        layout: {
-          name: 'dagre',
-                
-             
         },
-      });
+        {
+          selector: 'edge',
+          style: {
+            width: 0.5,
+            'line-color': '#ccc',
+            'target-arrow-color': '#ccc',
+            'target-arrow-shape': 'triangle',
+          },
+        },
+      ],
+      layout: {
+        name: 'dagre',
+        rankDir: 'LR',
+        nodeSep: 15,
+        edgeSep: 5,
+        rankSep: 20,
+        animate: false,
+        fit: false,
+      } as any,
+    });
+     cyInstanceRef.current.centre();
+     cyInstanceRef.current.zoom(3);
 
-      // Optional: destroy when component unmounts
-      return () => {
-        cy.destroy();
-      };
-    } catch (error) {
+    // Cleanup on unmount
+    return () => {
+      cyInstanceRef.current?.destroy();
+    };
+  }, []);
+
+  // Update elements/layout when schema changes
+  useEffect(() => {
+    if (!schema || !cyRef.current || !cyInstanceRef.current) return;
+    let parsedSchema : any;
+
+    try {
+      parsedSchema = JSON.parse(schema);
+    }  
+    catch (error){
       console.error('Invalid JSON:', error);
+      return;
     }
-  }, [editorRef.current]);
+    const elements = schemaParse(parsedSchema);
+    // Validate elements before update
+    const hasInvalidElements =  elements.some(el => !('id' in el.data) || !el.data.id);
+    if (hasInvalidElements) {
+      console.error("Invalid elements detected", elements);
+      return;
+    }
+
+    // Update elements (nodes and edges)
+    cyInstanceRef.current.json({ elements });
+
+    // Re-run layout
+    cyInstanceRef.current.layout({
+      name: 'dagre',
+      rankDir: 'LR',
+      nodeSep: 15,
+      edgeSep: 5,
+      rankSep: 20,
+      animate: false,
+      fit: false,
+    } as any).run();
+
+    
+    cyInstanceRef.current.center()  
+    cyInstanceRef.current.zoom(3);
+    cyInstanceRef.current.nodes().ungrabify();  /*  It prevent the draggable pof nodes */
+
+  }, [schema]);
 
   return (
     <div>
@@ -123,3 +174,5 @@ export const SchemaVisualization = () => {
     </div>
   );
 };
+
+export default React.memo(SchemaVisualization);
