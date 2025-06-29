@@ -1,9 +1,10 @@
 {
-  "name": "visualization-json-schema",
-  "private": true,
-  "version": "0.0.0",
+  "name": "visualize-json-schema",
+  "version": "0.0.1",
   "type": "module",
   "homepage": "https://jagpreetrahi.github.io/visualize-json-schema/",
+  "repository": "https://github.com/jagpreetrahi/visualize-json-schema",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
