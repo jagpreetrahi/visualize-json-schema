@@ -1,43 +1,41 @@
 import { BsBrightnessHigh } from "react-icons/bs";
-import { FaGithub } from "react-icons/fa";
+import { FaGithub, FaTimes } from "react-icons/fa";
 import { MonacoEditorContext } from "../contexts/EditorContext";
 import { useContext, useState } from "react";
 import exploreKeyword from './../data/basic-json-schema.json'
-import { FaTimes } from "react-icons/fa";
 
 const  NavigationBar = () => {
   const {toggleButton} = useContext(MonacoEditorContext);
 
   return (
     <>
-      <nav className="w-full  p-3 flex justify-between items-center bg-white shadow ">
-        <div className=" mx-2 flex items-center space-x-2">
-          <img src="json-icon.png" alt="JSON Logo" className="w-10 h-10  sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain mt-1" />
+      <nav className="p-3 flex justify-between items-center">
+        <div className="flex space-x-2">
+          <img src="json-icon.png" alt="JSON Schema logo" className="w-15 h-15 md:w-16 md:h-16" />
           <span className="text-md sm:text-xl md:text-2xl font-semibold text-gray-800">JSON<br />Schema</span>
         </div>
-        <ul className="flex gap-2 mx-2 sm:gap-2 md:gap-5 list-none  sm:mr-4 md:mr-9">
-          <li className="mt-1">
-            <button aria-label="Toggle Theme" className="text-xl  md:text-2xl py-1">
+        <ul className="flex gap-5 mr-5">
+          <li>
+            <button aria-label="Toggle Theme" className="text-2xl">
               <BsBrightnessHigh />
             </button>
           </li>
-          <li className="mt-2">
-            <a aria-label="Toggle Screen" className="px-2 py-1 md:px-4 md:py-2 ">
+          <li>
+            <a aria-label="Toggle Screen">
               {toggleButton}
             </a>
           </li>
-          <li className="mt-1">
-            <ExploreNavButton content ={exploreKeyword}  trigger="Explore keywords"/>
+          <li>
+            <ExploreNavButton content ={exploreKeyword} trigger="Explore keywords"/>
           </li>
-          <li className="mt-1">
-            <a href="https://github.com/jagpreetrahi/visualize-json-schema" target="_blank" rel="noopener noreferrer" className="w-26  ml-3 md:w-full  flex flex-row  px-2 py-1  items-center gap-2  md:px-2 md:py-1  md:text-base  bg-blue-600   text-white rounded-md hover:bg-blue-700 transition-colors">
-              <FaGithub size={20}/>
+          <li>
+            <a href="https://github.com/jagpreetrahi/visualize-json-schema" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-2 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              <FaGithub size={20} />
               Star on Github
             </a>
           </li>
         </ul>
       </nav>
-       
     </>
    
   );

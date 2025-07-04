@@ -5,7 +5,7 @@ import { MonacoEditorContext } from '../contexts/EditorContext';
 import * as monaco from 'monaco-editor';
 import  SchemaVisualization from './SchemaVisualization';
 
-const  MonacoEditor = () => {
+const MonacoEditor = () => {
     const {editorRef,  editorHeight, editorWidth , isEditorFullScreen} = useContext(MonacoEditorContext);
     // Extract the schema to a state so that react tracks the schema updates
     const [schemaValue, setSchemaValue] = useState(JSON.stringify(schema, null, 2));
@@ -36,7 +36,7 @@ const  MonacoEditor = () => {
                                <pre className="mt-2 whitespace-pre-wrap">{}</pre>
                             </div>
                         </div>
-                        <SchemaVisualization schema = {schemaValue}/>
+                        <SchemaVisualization schema = {schemaValue} />
                     </div>
 
                     
