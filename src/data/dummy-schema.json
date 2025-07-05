@@ -1,21 +1,36 @@
 {
-  
-  "title": "Person",
+  "$id": "https://example.com/job-posting.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A representation of a job posting",
   "type": "object",
+  "required": ["title", "company", "location", "description"],
   "properties": {
-    "firstName": {
-      "type": "string",
-      "description": "The person's first name."
+    "title": {
+      "type": "string"
     },
-    "lastName": {
-      "type": "string",
-      "description": "The person's last name."
+    "company": {
+      "type": "string"
     },
-    "age": {
-      "description": "Age in years which must be equal to or greater than zero.",
-      "type": "integer",
+    "location": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "employmentType": {
+      "type": "string"
+    },
+    "salary": {
+      "type": "number",
       "minimum": 0
+    },
+    "applicationDeadline": {
+      "type": "string",
+      "format": "date"
     }
   }
 }
+
+
+
 
