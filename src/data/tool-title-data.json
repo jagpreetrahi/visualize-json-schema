@@ -1,4 +1,4 @@
 {
     "title":"JSON Schema Visualization Tool",
-    "content":"JSON Schema Visualization Tool is an online tool that helps to visualize the schema in graphical representation such as graph and tree. It also provide the visualize of nested  and complex relationships between the  schema. The tool alsp has validation funtionality that shows you where you are making mistakes in the syntax. It works with all the dialects of JSON Schema as  draft-2020-12, draft-2019-09, draft-07, draft-06, draft-04."
+    "content":"JSON Schema Visualization Tool displays JSON schemas as interactive graphs or trees, making complex structures easier to understand. It also validates syntax across all major drafts like draft-2020-12, draft-07, and more."
 }
