@@ -1,6 +1,7 @@
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre'
 import React, {  useEffect, useRef } from 'react';
+
 cytoscape.use(dagre)
 
 const SchemaVisualization = ({schema} : {schema : string}) => {
@@ -10,6 +11,7 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
   // Types
   type CyNode = {
     data: {
+      type?: string,
       id: string;
       label: string;
     };
@@ -25,8 +27,14 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
 
   type CyElement = CyNode | CyEdge;
 
+ 
+
   /* Recursive function for storing the schema properties in the array of elements */ 
   function schemaParse( schema: any, parentId: string | null = null, elements: CyElement[] = [], path = 'root'): CyElement[] {
+     if (!schema || typeof schema !== 'object') {
+        console.warn("Invalid or missing schema at path:", path);
+      }
+     
     const nodeId = path || `node-${Math.random().toString(36).substring(2, 8)}`;
     if (!nodeId || typeof nodeId !== 'string') {
       console.warn("Skipping invalid node ID", schema);
@@ -35,6 +43,7 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
     /*pushing the nodes and edges to the elements array */
     elements.push({
       data: {
+        type : schema.type,
         id: nodeId,
         label: schema.title || path.split('.').slice(-1)[0],
       },
@@ -50,8 +59,10 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
         },
       });
     }
-
-    if (schema.type === 'object' && schema.properties) {
+    
+    const type = schema.type;
+    
+    if (type === 'object'   && schema.properties) {
       for (const [key, value] of Object.entries(schema.properties)) {
         schemaParse(value, nodeId, elements, `${path}.${key}`);
       }
@@ -59,7 +70,8 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
       const itemPath = `${path}[]`;
       schemaParse(schema.items, nodeId, elements, itemPath);
     }
-
+   
+    
     return elements;
 
   }
@@ -93,6 +105,15 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
             'min-height': '20px',
           },
         },
+        {
+          selector: 'node[type="object"]',
+          style: { 'background-color': 'red', 'label': 'data(label)'}
+        },
+        {
+          selector: 'node[type="array"]',
+          style: { 'background-color': 'yellow', 'label': 'data(label)' }
+        },
+
         {
           selector: 'edge',
           style: {
@@ -129,6 +150,7 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
 
     try {
       parsedSchema = JSON.parse(schema);
+    
     }  
     catch (error){
       console.error('Invalid JSON:', error);
@@ -156,21 +178,15 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
       fit: false,
     } as any).run();
 
-    
     cyInstanceRef.current.center()  
     cyInstanceRef.current.zoom(3);
-    cyInstanceRef.current.nodes().ungrabify();  /*  It prevent the draggable pof nodes */
+    cyInstanceRef.current.nodes().ungrabify();  /*  It prevent the draggable of nodes */
 
   }, [schema]);
 
   return (
     <div>
-      <div
-        id="cy"
-        ref={cyRef}
-        style={{ width: '60vw', height: '100vh', marginLeft: '15px' }}
-        className="visualize"
-      />
+      <div id="cy" ref={cyRef} style={{ width: '100vw', height: '100vh'}} className="visualize"/>
     </div>
   );
 };
