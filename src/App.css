@@ -40,3 +40,9 @@
     font-size : 25px;
     
 }
+.pillar-handle {
+  width: 12px;
+  background: #b0b0b0;
+  cursor: col-resize;
+  border-radius: 2px;
+}
