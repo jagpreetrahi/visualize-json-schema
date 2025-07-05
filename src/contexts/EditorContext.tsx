@@ -4,7 +4,8 @@ import { BsArrowsFullscreen } from "react-icons/bs"
 
 interface MonacoEditorContextType {
   editorRef: React.RefObject<monaco.editor.IStandaloneCodeEditor | null>;
-  isEditorFullScreen: boolean;
+  containerRef : React.RefObject<HTMLDivElement | null>;
+  isFullScreen: boolean;
   editorHeight: string;
   editorWidth: string;
   toggleScreen: () => void;
@@ -15,32 +16,39 @@ export const MonacoEditorContext = createContext({} as MonacoEditorContextType);
 
 export const MonacoEditorProvider = ({children } : any) => {
   const editorRef =  useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-  const [isEditorFullScreen , setIsEditorFullScreen] = useState(false);
-  const editorHeight : string = '80vh'
-  const editorWidth : string = '40vw'
-
+  const [isFullScreen , setIsFullScreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const editorHeight : string = '80vh';
+  const editorWidth : string = '40vw';
+  
   const toggleScreen = useCallback(() => {
-    setIsEditorFullScreen(prev => !prev);
+    if(!document.fullscreenElement){
+        containerRef.current?.requestFullscreen();
+     }
+     else{
+        document.exitFullscreen();
+     }
   }, []);
 
-  const toggleButton = (
-     <button onClick={toggleScreen} className="cursor-pointer"><BsArrowsFullscreen size={25}/></button>
-  )
-
   useEffect(() => {
-    function handleScreen(){
-      if(editorRef.current){
-        editorRef.current.layout()
-      }
+    const handleFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement)
     }
-    window.addEventListener('resize' , handleScreen)
-    return  () => window.removeEventListener('resize' , handleScreen)
+    document.addEventListener("fullscreenchange" , handleFullScreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange" , handleFullScreenChange)
+    }
   }, [])
 
+  const toggleButton = (
+     <button  id="btn-toggle" onClick={toggleScreen} className="cursor-pointer"><BsArrowsFullscreen/></button>
+  )
+  
   const value = {
     editorRef,
-    isEditorFullScreen,
+    isFullScreen,
     editorHeight,
+    containerRef,
     editorWidth,
     toggleScreen,
     toggleButton
