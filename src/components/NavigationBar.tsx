@@ -17,9 +17,10 @@ const  NavigationBar = () => {
         </div>
         <ul className="flex gap-5 mr-10">
           <li>
-            <button aria-label="Toggle Theme" className="text-xl cursor-pointer" onClick={toggleTheme}>
-              {theme === 'light' ? <BsMoon/> : <BsBrightnessHigh />}
-            </button>
+            <a href="https://www.learnjsonschema.com/2020-12/" target="_blank" rel="noopener noreferrer" className="text-xl" data-tooltip-id="learn-keywords" data-tooltip-content="Explore Keywords">
+              <FaSearch />
+              <Tooltip id="learn-keywords" />
+            </a>
           </li>
           <li>
             <a href="https://github.com/jagpreetrahi/visualize-json-schema" target="_blank" rel="noopener noreferrer" className="text-xl" data-tooltip-id="github" data-tooltip-content="Star on Github">
@@ -28,10 +29,9 @@ const  NavigationBar = () => {
             </a>
           </li>
           <li>
-            <a href="https://www.learnjsonschema.com/2020-12/" target="_blank" rel="noopener noreferrer" className="text-xl" data-tooltip-id="learn-keywords" data-tooltip-content="Explore Keywords">
-              <FaSearch />
-              <Tooltip id="learn-keywords" />
-            </a>
+            <button aria-label="Toggle Theme" className="text-xl cursor-pointer" onClick={toggleTheme}>
+              {theme === 'light' ? <BsMoon/> : <BsBrightnessHigh />}
+            </button>
           </li>
           <li>
             <a aria-label="Toggle Screen">
@@ -44,5 +44,4 @@ const  NavigationBar = () => {
    
   );
 }
-
 export default NavigationBar;
