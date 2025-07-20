@@ -2,7 +2,7 @@ import { BsLinkedin, BsGithub, BsSlack, BsTwitterX } from "react-icons/bs";
 
 const BottomBar = () => {
     return (
-        <div className="fixed bottom-0 left-0 w-full bg-blue-700  px-4 py-2 text-sm z-50 text-white">
+        <div className="fixed bottom-0 left-0 w-full bg-[var(--bottom-bg-color)]  px-4 py-2 text-sm z-50 text-[var(--bottom-text-color)]">
             <div className="flex flex-col md:flex-row">
                 <div className="w-full">
                     Copyright © 2025 JSON Schema. All rights reserved.
