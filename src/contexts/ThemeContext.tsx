@@ -8,21 +8,17 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(undefine
 export const ThemeProvider = ({children} : any) => {
     const [theme , setTheme] = useState<Theme>(() =>{
        const getTheme =  localStorage.getItem('theme') as Theme
-       return getTheme || 'light'
+       // fallback for invalid data
+       return (getTheme === 'light' || getTheme === 'dark') ? getTheme : 'light';
     });
 
     const toggleTheme = () => {
         setTheme(prev => prev === 'light' ? 'dark' : 'light')
     }
-
     useEffect(() => {
        localStorage.setItem("theme", theme);
        //for apply the correct CSS variable
-        if (theme === "dark") {
-            document.documentElement.setAttribute("data-theme", "dark");
-        } else {
-            document.documentElement.removeAttribute("data-theme");
-        }
+       document.documentElement.setAttribute("data-theme", theme);
     }, [theme])
     
     return <ThemeContext.Provider value={{theme , toggleTheme}}>
