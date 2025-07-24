@@ -13,68 +13,101 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
   const [debouncedValue, setDebouncedValue] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [closeError, setCloseError] = useState(false);
+
+   // deeply find the key in the schema
+   const RecursivelyKeys = (schema : any, findkey : string): string | undefined  =>  {
+     if(!schema || typeof schema !== 'object') return;
+     if (schema.properties && typeof schema.properties === 'object') {
+        for (const  key of Object.keys(schema.properties)) {
+          if(key === findkey) return key;
+          const result = RecursivelyKeys(schema.properties[key], findkey)
+          if(result) return result;
+        }
+      }
+      // for an array
+      if (schema?.items) {
+        if (Array.isArray(schema.items)) {
+          for(const item of schema.items){
+            const findItem = RecursivelyKeys(item, findkey);
+            if (findItem) return findItem
+          }
+         
+        } else {
+          return RecursivelyKeys(schema.items, findkey);
+        }
+      }
+      return;
+    }
+
+  // track the real type value
   const handleInput = (event : React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value.trim());
+    const newInput = event.target.value
+    setInputValue(newInput);
     setErrorMessage('');
+    if(newInput){
+      handlePointValue(newInput)
+    }
   }
+  // change the color after or before matches
   const handlePointValue = (input : any) => {
+    const normalizeLabel = (label : string) => label.split('(')[0].trim();
       const cy = cyRef.current;
       if(!cy) return;
-      if(input === '') {
-         cy.nodes().forEach(node => {
-            node.removeStyle('background-color');
-         });
-         return 
-      }
-      //find the matches 
-      const matchesNodes = cy.nodes().filter(n => n.data('label') === input);
-      if (matchesNodes.length > 0) {
-        matchesNodes.style({
-          'background-color': '#ffa500',
-        });
-      }
+      cy.nodes().forEach(node => {
+        const label = normalizeLabel(node.data('label'))
+        if (label === input) {
+          node.style('background-color', '#75f209'); // example color
+        } else {
+          node.removeStyle('background-color');
+        }
+      });
     }
   // debouncing the input value
   useEffect(() => {
-    const delayValue =  setTimeout(() => {
+   const delayValue =  setTimeout(() => {
       setDebouncedValue(inputValue)
-    }, 300)
+    }, 1500)
     return () => clearTimeout(delayValue)
   }, [inputValue])
 
   // Validates the value only after the user stop to search
   useEffect(() => {
-    handlePointValue(debouncedValue);
-    if(!debouncedValue) return; // don't validate it on the empty value;
-    let parsedSchema : any;
+   if(!debouncedValue){  // don't validate it on the empty value;
+      setErrorMessage('');
+      return;
+    }; 
     try {
-      parsedSchema = JSON.parse(schema)
-      const properties = parsedSchema.properties;
-      const propertyKey = Object.keys(properties);
-      
-      if(!propertyKey.includes(debouncedValue)){
-        setErrorMessage(`${debouncedValue} not in prop`)
-      }
-      else{
+      const parsedSchema = JSON.parse(schema);
+      console.log("The parseSchema is ", parsedSchema);
+      // check whether the value is found or not
+      const isFound = RecursivelyKeys(parsedSchema, debouncedValue);
+      console.log("THe found value is ", isFound)
+      if (!isFound) {
+        setErrorMessage(`${debouncedValue} not in properties`);
+      } else {
         setErrorMessage('');
+        handlePointValue(debouncedValue);
       }
+      
     } catch (error) {
-      console.warn("Invalid JSON Schema")
+      console.error("Error parsing JSON Schema:", error);
+      setErrorMessage("Invalid schema format");
     }
-  } , [debouncedValue , schema]);
+  } , [debouncedValue]);
 
   useEffect(() => {
     if(errorMessage){
-       setCloseError(false);
+      setCloseError(false);
     }
   }, [errorMessage])
 
+  // move the graph at the center
   const handleCenter = () => {
     const cy = cyRef.current;
     if(!cy) return;
     cy.center();
   }
-
+  // increase  the zoom  
   const handleZoomIn = () => {
     const cy = cyRef.current;
     if(!cy) return;
@@ -82,6 +115,7 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
     cy.zoom(newZoom)
     setZoomlevel(newZoom);
   }
+  // decrease the zoom
   const handleZoomOut = () => {
     const cy = cyRef.current;
     if(!cy) return;
@@ -93,7 +127,7 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
   <div className='flex flex-col'>
     {/* Cytoscape  */}
      <div className='relative'>
-       <Graph schema={schema} exposeInstances={cyRef} />
+      <Graph schema={schema} exposeInstances={cyRef} />
        {/*Error Message */}
         <div className='absolute top-0 left-10 mt-2  mx-auto w-auto'>
          <div>
