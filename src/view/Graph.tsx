@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import cytoscape from "cytoscape";
 import dagre from 'cytoscape-dagre';
-import { schemaParse } from "../utils/schemaParse";
+import { parseSchemaInternal } from "../utils/schemaParse";
 // use the dagre layout 
 cytoscape.use(dagre)
 export const Graph = ({schema , exposeInstances} : {schema : string , exposeInstances : React.RefObject<cytoscape.Core | null>}) => {
@@ -10,8 +10,7 @@ export const Graph = ({schema , exposeInstances} : {schema : string , exposeInst
     const cyInstanceRef = useRef<cytoscape.Core | null>(null);
     // Initialize Cytoscape once on mount
     useEffect(() => {
-      
-        if (!cyRef.current) return;
+      if (!cyRef.current) return;
         cyInstanceRef.current = cytoscape({
           container: cyRef.current,
           userPanningEnabled: true,
@@ -25,7 +24,7 @@ export const Graph = ({schema , exposeInstances} : {schema : string , exposeInst
               style: {
                 content: 'data(label)',
                 shape: 'roundrectangle',
-                'background-color': '#3498DB',
+                'background-color': '#6fb0ec',
                 color: '#fff',
                 'font-size': '7px',
                 'text-wrap': 'wrap',
@@ -40,11 +39,11 @@ export const Graph = ({schema , exposeInstances} : {schema : string , exposeInst
             },
             {
               selector: 'node[type="object"]',
-              style: { 'background-color': '#E74C3C', 'label': 'data(label)'}
+              style: { 'background-color': '#f56262', 'label': 'data(label)'}
             },
             {
               selector: 'node[type="array"]',
-              style: { 'background-color': 'yellow', 'label': 'data(label)' }
+              style: { 'background-color': '#ffd966',  'label': 'data(label)' }
             },
     
             {
@@ -55,7 +54,6 @@ export const Graph = ({schema , exposeInstances} : {schema : string , exposeInst
                 width: 0.5,
                 'line-color': '#ccc',
                 'target-arrow-color': '#ccc',
-                
               },
             },
           ],
@@ -68,42 +66,39 @@ export const Graph = ({schema , exposeInstances} : {schema : string , exposeInst
             animate: false,
             fit: false,
           } as any,
-        });
+       });
         if(exposeInstances){
           exposeInstances.current = cyInstanceRef.current
         }
         cyInstanceRef.current.center();
         cyInstanceRef.current.zoom(3);
-        
-        
-// Cleanup on unmount
+        cyInstanceRef.current.resize();
+        // Cleanup on unmount
         return () => {
           if(exposeInstances){
              exposeInstances.current = null;
           }
           cyInstanceRef.current?.destroy();
         };
-    }, []);
+     }, []);
     // Update elements/layout when schema changes
     useEffect(() => {
         if (!schema || !cyRef.current || !cyInstanceRef.current) return;
-        let parsedSchema : any;
-    
-        try {
-          parsedSchema = JSON.parse(schema);
-        }  
-        catch (error){
-          console.error('Invalid JSON:', error);
+        let parsedSchema = JSON.parse(schema);
+        if (!parsedSchema || typeof parsedSchema !== 'object') {
+          throw new Error("Invalid parsed schema");
+        }
+        let elements = parseSchemaInternal(parsedSchema);
+        if (!elements || !Array.isArray(elements) || elements.length === 0) {
+          console.error("No valid elements generated from schema");
           return;
         }
-        const elements = schemaParse(parsedSchema);
         // Validate elements before update
-        const hasInvalidElements =  elements.some(el => !('id' in el.data) || !el.data.id);
+        const hasInvalidElements =  elements.some(el => !('id' in el.data)  ||  typeof el.data.id !== 'string');
         if (hasInvalidElements) {
           console.error("Invalid elements detected", elements);
           return;
         }
-    
         // Update elements (nodes and edges)
         cyInstanceRef.current.json({ elements });
     
@@ -117,13 +112,11 @@ export const Graph = ({schema , exposeInstances} : {schema : string , exposeInst
           animate: false,
           fit: false,
         } as any) as cytoscape.Layouts;
-    
         layout.run();
         cyInstanceRef.current!.nodes().ungrabify();
         cyInstanceRef.current!.center();
-
-    }, [schema]);
+     }, [schema]);
     return (
-        <div id="cy" ref={cyRef} style={{height : 'calc(100vh - 70px)'}} className="visualize "></div>
+      <div id="cy" ref={cyRef} style={{height : 'calc(100vh - 70px)'}} className="visualize "></div>
     )
 }
