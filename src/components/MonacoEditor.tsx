@@ -1,28 +1,61 @@
 import Editor from '@monaco-editor/react';
 import schema from '../data/dummy-schema.json'
-import {useContext, useState} from 'react';
+import {useCallback, useContext, useState, useMemo} from 'react';
 import { MonacoEditorContext } from '../contexts/EditorContext';
 import * as monaco from 'monaco-editor';
 import { CgChevronDown } from "react-icons/cg";
 import SchemaVisualization from './SchemaVisualization';
 import {Panel, PanelGroup, PanelResizeHandle} from 'react-resizable-panels'
 
-
-
 const MonacoEditor = () => {
     const {editorRef,  editorHeight, editorWidth , isFullScreen, containerRef, toggleButton} = useContext(MonacoEditorContext);
     // Extract the schema to a state so that react tracks the schema updates
     const [schemaValue, setSchemaValue] = useState(JSON.stringify(schema, null, 2));
+    const [validationError, setValidationError] = useState('');
+    const [isEditorReady, setIsEditorReady] = useState(false);
     //define the panel size for editor and visualization
-      const editorPanelMaxSize : number = 40;
-      const editorPanelMinSize : number = 30;
-      const visualizePanelMaxSize : number = 70;
-      const visualizePanelMinSIze :number = 60;
+    const editorPanelMaxSize : number = 40;
+    //const editorPanelMinSize : number = 20;
+    const visualizePanelMaxSize :number = 70;
+    // validates the JSON Schema before creation the visualization and prevent the un-necessary creation 
+    const updateVisualizationFromJSON = useCallback((jsonString : string | undefined) => {
+        if(!jsonString || jsonString.trim() === ''){
+            setValidationError("Empty JSON schema")
+            return;
+        }
+        try {
+            const parsedSchema = JSON.parse(jsonString);
+            if(typeof parsedSchema === 'object' || parsedSchema !== null){
+                setSchemaValue(jsonString);
+                setValidationError('');   
+            }
+            window.sessionStorage.setItem('JSON Schema', jsonString)
+        } catch (error : any) {
+            setValidationError(`Invalid JSON: ${error.message}`);
+        }
+    }, [schemaValue])
+
+   
 
     {/*Assign the editor instance when the editor's mounted */}
     function MonacoEditorDidMount(editor: monaco.editor.IStandaloneCodeEditor) {
         editorRef.current = editor;
+        setIsEditorReady(true);
+       const isItems =  window.sessionStorage.getItem('JSON Schema');
+       if(isItems){
+         setSchemaValue(isItems);
+       }
     }
+
+    // Memoized validation result to prevent unnecessary renders
+    const validationDisplay = useMemo(() => {
+        if (validationError) {
+            return <span className="text-red-400">{validationError}</span>;
+            
+        }
+        return <span className="text-green-400">✓ Valid JSON Schema</span>;
+    }, [validationError]);
+     
  
     // state for toggle the view visibility
     const view = ['Graph' , 'Tree']
@@ -56,36 +89,31 @@ const MonacoEditor = () => {
                     </div>
                 </div>
             </div>
-          
-           
-           
-          <PanelGroup direction="horizontal">
-              <Panel maxSize={editorPanelMaxSize} minSize={editorPanelMinSize} defaultSize={editorPanelMaxSize}>
+            <PanelGroup direction="horizontal">
+              <Panel maxSize={editorPanelMaxSize} defaultSize={editorPanelMaxSize}>
                   <div className='flex flex-col h-[100vh] gap-y-1'>
                         <div className="flex-[8] overflow-hidden">
                             <Editor height={editorHeight} width={editorWidth}  defaultLanguage="json" value={schemaValue} theme="vs-dark" onMount={MonacoEditorDidMount} options={{
                                 scrollbar: { horizontal: "hidden" },
                                 minimap: { enabled: false }
                             }}
-                            onChange={(value) => setSchemaValue(value || "")}
+                            onChange={value => updateVisualizationFromJSON(value)}
                             />
                         </div>
-                        <div className="flex-[2] bg-neutral-800 text-white text-sm py-2">
+                        <div className="flex-[2] w-[40vw] bg-neutral-800 text-white text-sm py-2">
                             <div className="flex">
                                 <h3 className="mx-4">Validation Result</h3>
                             </div>
-                           <pre className="mt-2 whitespace-pre-wrap">{}</pre>
+                           <pre className="mt-2 whitespace-pre-wrap">{validationDisplay}</pre>
                         </div>
                    </div>
-                
-               </Panel>
+                </Panel>
                <PanelResizeHandle className='pillar-handle'/>
-               <Panel maxSize={visualizePanelMaxSize} minSize={visualizePanelMinSIze} defaultSize={visualizePanelMinSIze}>
-                   <SchemaVisualization schema={schemaValue} />
+               <Panel  defaultSize={visualizePanelMaxSize}>
+                  {isEditorReady && (<SchemaVisualization schema={schemaValue} />)}
                </Panel>
           </PanelGroup>
        </div>
 )}
-
 export default MonacoEditor
 
