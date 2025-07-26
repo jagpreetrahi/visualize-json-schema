@@ -118,7 +118,7 @@ function createLabel(schema: any, type: string, path: string): string {
   }
   if (type === 'object') {
     const hasProps = schema?.properties && Object.keys(schema.properties).length > 0;
-    return hasProps  ? `${name} (object)` : `${name} (empty object)`;
+    return hasProps  ? `${name}` : `${name} (empty object)`;
   }
   if (type === 'array') {
     const hasPrefix = schema.prefixItems?.length || 0;
@@ -130,13 +130,11 @@ function createLabel(schema: any, type: string, path: string): string {
        return `${name} [${hasPrefix}]`
     }
     if(hasItems){
-      console.log("This return the schema items")
-       return `${name} [array]`
+      return `${name}`
     }
-    
     return `${name} []`;
   }
-  return `${name} (${type})`;
+  return `${name}`;
 }
 
 /* Recursive function for storing the schema properties in the array of elements */ 
@@ -256,7 +254,7 @@ export function schemaParse(schema: any, parentId: string | null = null, element
       context.elements.push({
         data: {
           id: propNodeId,
-          label: isNestedObject ? key  : `${key} (${schemaValue.type || 'unknown'})`,
+          label: `${key}`,
           type: schemaValue.type || 'unknown',
           ...(isNestedObject ? {isCenter : true} : {})
         },
@@ -293,10 +291,10 @@ export function schemaParse(schema: any, parentId: string | null = null, element
   // Handle patternProperties
   if (schema.patternProperties && typeof schema.patternProperties === 'object' && schema.patternProperties !== null) {
     Object.entries(schema.patternProperties).forEach(([pattern ,patternSchema], index) => {
-      schemaParse(patternSchema, nodeId, context.elements, `${path}_patternProperties_${index}`, childContext);
+      schemaParse(patternSchema, nodeId, context.elements, `${path}_patternProperties_${pattern}`, childContext);
     });
   }
-  if (schema.type === 'array') {
+ if (schema.type === 'array') {
     if (schema.prefixItems && Array.isArray(schema.prefixItems)) {
       schema.prefixItems.forEach((itemsSchema: any, index: any) => {
         schemaParse(itemsSchema, nodeId, context.elements, `${path}[${index}]`, childContext);
@@ -309,5 +307,5 @@ export function schemaParse(schema: any, parentId: string | null = null, element
       schemaParse(schema.unevaluatedItems, nodeId,context.elements, `${path}_unevaluatedItems`, childContext);
     }
   }
-  return elements;
+return elements;
 }
