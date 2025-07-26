@@ -71,10 +71,9 @@ const MonacoEditor = () => {
   return (
     <div
       ref={containerRef}
-    //   className={`${isFullScreen ? "fixed inset-0 z-50 " : "relative z-10"}`}
+        className={`${isFullScreen ? "fixed inset-0 z-50 " : "relative z-10"}`}
     >
       <div className="w-full px-2 py-1 mt-1 bg-[var(--view-bg-color)] justify-items-end">
-        {console.log(isFullScreen)}
         {isFullScreen && (
           <div className="text-[var(--view-text-color)]">{toggleButton}</div>
         )}
