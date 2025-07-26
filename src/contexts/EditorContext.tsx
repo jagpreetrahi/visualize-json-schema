@@ -20,7 +20,6 @@ export const MonacoEditorProvider = ({children } : any) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const editorHeight : string = '80vh';
   const editorWidth : string = '40vw';
-  
   const toggleScreen = useCallback(() => {
     if(!document.fullscreenElement){
         containerRef.current?.requestFullscreen();
@@ -41,9 +40,8 @@ export const MonacoEditorProvider = ({children } : any) => {
   }, [])
 
   const toggleButton = (
-     <button  id="btn-toggle" onClick={toggleScreen} className="cursor-pointer"><BsArrowsFullscreen/></button>
+     <button  id="btn-toggle" onClick={toggleScreen} className="cursor-pointer" style={{ color: 'var(--navigation-text-color)' }}><BsArrowsFullscreen/></button>
   )
-  
   const value = {
     editorRef,
     isFullScreen,
