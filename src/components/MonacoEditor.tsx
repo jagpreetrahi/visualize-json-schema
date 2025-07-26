@@ -2,7 +2,7 @@ import Editor from '@monaco-editor/react';
 import schema from '../data/dummy-schema.json'
 import {useContext, useState} from 'react';
 import { MonacoEditorContext } from '../contexts/EditorContext';
-import {useTheme} from '../contexts/ThemeContext'
+import { ThemeContext } from '../contexts/ThemeContext'
 import * as monaco from 'monaco-editor';
 import { CgChevronDown } from "react-icons/cg";
 import SchemaVisualization from './SchemaVisualization';
@@ -10,7 +10,7 @@ import {Panel, PanelGroup, PanelResizeHandle} from 'react-resizable-panels'
 
 const MonacoEditor = () => {
     const {editorRef,  editorHeight, editorWidth , isFullScreen, containerRef, toggleButton} = useContext(MonacoEditorContext);
-    const {theme} = useTheme();
+    const { theme } = useContext(ThemeContext);
     // Extract the schema to a state so that react tracks the schema updates
     const [schemaValue, setSchemaValue] = useState(JSON.stringify(schema, null, 2));
     //define the panel size for editor and visualization

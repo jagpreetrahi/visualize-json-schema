@@ -1,13 +1,13 @@
 import { BsBrightnessHigh } from "react-icons/bs";
 import { FaGithub, FaSearch } from "react-icons/fa";
 import { MonacoEditorContext } from "../contexts/EditorContext";
-import { useTheme } from "../contexts/ThemeContext";
+import { ThemeContext } from "../contexts/ThemeContext";
 import { useContext } from "react";
 import { Tooltip } from "react-tooltip";
 
 const NavigationBar = () => {
   const { toggleButton } = useContext(MonacoEditorContext);
-  const { toggleTheme } = useTheme();
+  const { toggleTheme } = useContext(ThemeContext);
   return (
     <>
       <nav className="p-3 flex justify-between items-center">
