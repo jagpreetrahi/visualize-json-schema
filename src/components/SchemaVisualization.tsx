@@ -50,11 +50,11 @@ const SchemaVisualization = ({schema} : {schema : string}) => {
   }
   // change the color after or before matches
   const handlePointValue = (input : any) => {
-    const normalizeLabel = (label : string) => label.split('(')[0].trim();
+    
       const cy = cyRef.current;
       if(!cy) return;
       cy.nodes().forEach(node => {
-        const label = normalizeLabel(node.data('label'))
+        const label = node.data('label')
         if (label === input) {
           node.style('background-color', '#75f209'); // example color
         } else {
