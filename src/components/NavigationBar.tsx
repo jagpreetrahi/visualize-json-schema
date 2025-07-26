@@ -1,43 +1,71 @@
-import type React from "react";
 import { BsBrightnessHigh } from "react-icons/bs";
-import { FaGithub } from "react-icons/fa";
+import { FaGithub, FaSearch } from "react-icons/fa";
+import { MonacoEditorContext } from "../contexts/EditorContext";
+import { ThemeContext } from "../contexts/ThemeContext";
+import { useContext } from "react";
+import { Tooltip } from "react-tooltip";
 
-interface NavigationProps{
-   togglebutton : React.ReactNode
-}
- 
-
-function NavigationBar({togglebutton} : NavigationProps) {
+const NavigationBar = () => {
+  const { toggleButton } = useContext(MonacoEditorContext);
+  const { toggleTheme } = useContext(ThemeContext);
   return (
-
-    
-    <nav className="w-full  p-3 flex justify-between items-center bg-white shadow ">
-        <div className=" mx-2 flex items-center space-x-2">
-            <img src="json-icon.png" alt="JSON Logo" className="w-10 h-10  sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain mt-1" />
-             <span className="text-md sm:text-xl md:text-2xl font-semibold text-gray-800">JSON<br />Schema</span>
+    <>
+      <nav className="p-3 flex justify-between items-center">
+        <div className="flex items-center">
+          <img
+            src="logo.png"
+            alt="Visualize JSON Schema logo"
+            className="w-12 h-12 md:w-16 md:h-16"
+          />
+          <span className="sm:text-xl md:text-xl leading-none font-semibold text-[var(--tool-name-color)]">
+            JSON
+            <br />
+            Schema
+          </span>
         </div>
-        <ul className="flex gap-2 mx-2 sm:gap-2 md:gap-4 list-none  sm:mr-4 md:mr-9">
-          
-          <li className="mt-1">
-                <button aria-label="Toggle Theme" className="text-2xl  md:text-3xl py-1">
-                   <BsBrightnessHigh />
-                </button>
-           </li>
-          <li className="mt-1">
-                <button aria-label="Toggle Screen" className="relative px-2 py-1 md:px-4 md:py-2 ">
-                   {togglebutton}
-                </button>
-           </li>
-          <li className="mt-1">
-                
-              <a href="https://github.com/jagpreetrahi/visualize-json-schema" target="_blank" rel="noopener noreferrer" className="w-26  ml-3 md:w-full  flex flex-row  px-2 py-1  items-center gap-2 sm:px-2 md:px-4 md:py-2 sm:py-1  sm:text-md  md:text-base  bg-blue-600   text-white rounded-md hover:bg-blue-700 transition-colors">
-                  <FaGithub size={20}/>
-                  Star on Github
-              </a>
-            </li>
+        <ul className="flex gap-5 mr-10">
+          <li>
+            <button
+              aria-label="Toggle Theme"
+              className="text-xl cursor-pointer"
+              onClick={toggleTheme}
+            >
+              <BsBrightnessHigh style={{ color: "var(--navigation-text-color)" }} />
+            </button>
+          </li>
+          <li>
+            <a
+              href="https://github.com/jagpreetrahi/visualize-json-schema"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xl"
+              data-tooltip-id="github"
+              data-tooltip-content="Star on Github"
+            >
+              <FaGithub style={{ color: "var(--navigation-text-color)" }} />
+              <Tooltip id="github" />
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://www.learnjsonschema.com/2020-12/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xl"
+              data-tooltip-id="learn-keywords"
+              data-tooltip-content="Explore Keywords"
+            >
+              <FaSearch style={{ color: "var(--navigation-text-color)" }} />
+              <Tooltip id="learn-keywords" />
+            </a>
+          </li>
+          <li>
+            <a aria-label="Toggle Screen">{toggleButton}</a>
+          </li>
         </ul>
-    </nav>
+      </nav>
+    </>
   );
-}
+};
 
 export default NavigationBar;

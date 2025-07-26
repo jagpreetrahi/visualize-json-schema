@@ -1,24 +1,36 @@
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "age": 30,
-  "email": "john.doe@example.com",
-  "address": {
-    "street": "123 Main Street",
-    "city": "New York",
-    "state": "NY",
-    "postalCode": "10001"
-  },
-  "phoneNumbers": [
-    {
-      "type": "home",
-      "number": "555-1234"
+  "$id": "https://example.com/job-posting.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A representation of a job posting",
+  "type": "object",
+  "required": ["title", "company", "location", "description"],
+  "properties": {
+    "title": {
+      "type": "string"
     },
-    {
-      "type": "mobile",
-      "number": "555-5678"
+    "company": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "employmentType": {
+      "type": "string"
+    },
+    "salary": {
+      "type": "number",
+      "minimum": 0
+    },
+    "applicationDeadline": {
+      "type": "string",
+      "format": "date"
     }
-  ],
-  "isActive": true,
-  "registeredDate": "2023-01-15"
+  }
 }
+
+
+
+
