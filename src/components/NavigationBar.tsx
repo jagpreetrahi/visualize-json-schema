@@ -1,11 +1,16 @@
 import { BsBrightnessHigh } from "react-icons/bs";
 import { FaGithub, FaSearch } from "react-icons/fa";
+import { CgChevronDown } from "react-icons/cg";
 import { MonacoEditorContext } from "../contexts/EditorContext";
 import { ThemeContext } from "../contexts/ThemeContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Tooltip } from "react-tooltip";
 
 const NavigationBar = () => {
+  const view = ["Graph", "Tree"];
+  const [isView, setIsView] = useState(false);
+  const [isSelected, setIsSelected] = useState("Graph");
+
   const { toggleButton } = useContext(MonacoEditorContext);
   const { toggleTheme } = useContext(ThemeContext);
   return (
@@ -25,12 +30,45 @@ const NavigationBar = () => {
         </div>
         <ul className="flex gap-5 mr-10">
           <li>
+            <div className="relative">
+              <button
+                className="text-[var(--view-text-color)] cursor-pointer flex items-center gap-x-1"
+                onClick={() => setIsView((prev) => !prev)}
+              >
+                View
+                <CgChevronDown size={12} />
+              </button>
+              {isView && (
+                <div className="absolute mt-2 bg-[var(--view-bg-color)] rounded-sm px-2 py-1">
+                  <ul className="flex gap-x-2 text-[var(--view-text-color)]">
+                    {view.map((item, idx) => (
+                      <li key={idx}>
+                        <button
+                          onClick={() => setIsSelected(item)}
+                          className={`${
+                            isSelected === item
+                              ? "bg-neutral-400"
+                              : "bg-transparent hover:bg-neutral-400"
+                          } p-1 rounded cursor-pointer`}
+                        >
+                          {item}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </li>
+          <li>
             <button
               aria-label="Toggle Theme"
               className="text-xl cursor-pointer"
               onClick={toggleTheme}
             >
-              <BsBrightnessHigh style={{ color: "var(--navigation-text-color)" }} />
+              <BsBrightnessHigh
+                style={{ color: "var(--navigation-text-color)" }}
+              />
             </button>
           </li>
           <li>
