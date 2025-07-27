@@ -1,41 +1,32 @@
-import { createContext, useEffect, useState, useContext} from "react";
-type Theme = 'light' | 'dark';
-interface ThemeContextType{
-    theme : Theme,
-    toggleTheme : () => void
-}
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-export const ThemeProvider = ({children} : any) => {
-    const [theme , setTheme] = useState<Theme>(() =>{
-       const getTheme =  localStorage.getItem('theme') as Theme
-       return getTheme || 'light'
-    });
+import { createContext, useEffect, useState, type ReactNode } from "react";
 
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'light' ? 'dark' : 'light')
-    }
+type ThemeContextType = {
+  theme: string;
+  toggleTheme: () => void;
+};
 
-    useEffect(() => {
-       localStorage.setItem("theme", theme);
-       //for apply the correct CSS variable
-        if (theme === "dark") {
-            document.documentElement.setAttribute("data-theme", "dark");
-        } else {
-            document.documentElement.removeAttribute("data-theme");
-        }
-    }, [theme])
-    
-    return <ThemeContext.Provider value={{theme , toggleTheme}}>
-        {children}
+type ThemeProviderProps = {
+  children: ReactNode;
+};
+
+export const ThemeContext = createContext<ThemeContextType>({
+  theme: "light",
+  toggleTheme: () => null,
+});
+
+export const ThemeProvider = ({ children }: ThemeProviderProps) => {
+  const [theme, setTheme] = useState("light");
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
+  useEffect(() => {
+    //for apply the correct CSS variable
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
     </ThemeContext.Provider>
-
-}
-
-//custom hook for checks the context for undefined
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
+  );
 };

@@ -1,14 +1,18 @@
+body{
+  background-color: var(--bg-color)
+}
+
 .visualize {
-  background-color: #1a1a1a;
+  background-color: var(--visualize-bg-color);
   background-image:
-    linear-gradient(to right, rgba(229,231,235,0.1) 0.1px, transparent 1px),
-    linear-gradient(to bottom, rgba(229,231,235,0.1) 0.1px, transparent 1px);
+    linear-gradient(to right, var(--visualize-bg-image) 0.1px, transparent 1px),
+    linear-gradient(to bottom, var(--visualize-bg-image) 0.1px, transparent 1px);
   background-size: 30px 30px;
 }
 
 .pillar-handle {
   width: 12px;
-  background: #b0b0b0;
+  background-color: var(--pillar-bg-color);
   cursor: col-resize;
   border-radius: 2px;
 }
