@@ -5,7 +5,6 @@ import { MonacoEditorProvider } from "./contexts/EditorContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import "./style/theme.css";
 import "./App.css";
-import ToolSummary from "./components/ToolSummary";
 
 function App() {
   return (
@@ -13,7 +12,6 @@ function App() {
       <ThemeProvider>
         <MonacoEditorProvider>
           <NavigationBar />
-          <ToolSummary />
           <MonacoEditor />
         </MonacoEditorProvider>
         <BottomBar />

@@ -6,6 +6,7 @@ import { ThemeContext } from "../contexts/ThemeContext";
 import * as monaco from "monaco-editor";
 import SchemaVisualization from "./SchemaVisualization";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import ToolSummary from "./ToolSummary";
 
 const MonacoEditor = () => {
   const {
@@ -24,9 +25,9 @@ const MonacoEditor = () => {
   const [validationError, setValidationError] = useState("");
   const [isEditorReady, setIsEditorReady] = useState(false);
   //define the panel size for editor and visualization
-  const editorPanelMaxSize: number = 40;
-  const editorPanelMinSize: number = 20;
-  const visualizePanelMaxSize: number = 70;
+  const editorPanelMaxWidth: number = 40;
+  const editorPanelMinWidth: number = 20;
+  const visualizePanelMaxWidth: number = 100 - editorPanelMaxWidth;
   // validates the JSON Schema before creation the visualization and prevent the un-necessary creation
   const updateVisualizationFromJSON = useCallback(
     (jsonString: string | undefined) => {
@@ -71,20 +72,23 @@ const MonacoEditor = () => {
   return (
     <div
       ref={containerRef}
-        className={`${isFullScreen ? "fixed inset-0 z-50 " : "relative z-10"}`}
+        // className={`${isFullScreen ? "fixed inset-0 z-50" : "relative z-50"}`}
+        className="absolute h-[85vh] w-full top-[10vh] bottom-[30vh] bg-amber-500"
     >
-      <div className="w-full px-2 py-1 mt-1 bg-[var(--view-bg-color)] justify-items-end">
-        {isFullScreen && (
-          <div className="text-[var(--view-text-color)]">{toggleButton}</div>
-        )}
-      </div>
+        {/* {!isFullScreen && <ToolSummary />} */}
+        {isFullScreen ? (
+            <div className="w-full px-1 bg-[var(--view-bg-color)] justify-items-end">
+                <div className="text-[var(--view-text-color)]">{toggleButton}</div>
+            </div>
+        ) : <ToolSummary />
+        }
       <PanelGroup direction="horizontal">
         <Panel
-          maxSize={editorPanelMaxSize}
-          minSize={editorPanelMinSize}
-          defaultSize={editorPanelMaxSize}
+          maxSize={editorPanelMaxWidth}
+          minSize={editorPanelMinWidth}
+          defaultSize={editorPanelMaxWidth}
         >
-          <div className="flex flex-col h-[100vh] gap-y-1">
+          <div className="flex flex-col h-full">
             <div className="flex-[8] overflow-hidden">
               <Editor
                 height={editorHeight}
@@ -100,7 +104,7 @@ const MonacoEditor = () => {
                 onChange={(value) => updateVisualizationFromJSON(value)}
               />
             </div>
-            <div className="flex-[2] w-[40vw] bg-[var(--validation-bg-color)] text- text-sm py-2">
+            <div className="flex-[2] w-full bg-[var(--validation-bg-color)] text-sm py-2">
               <div className="flex">
                 <h3 className="mx-4 rounded-md px-2 py-1 text-[var(--validation-text-color)] bg-[var(--validation-heading-color)]">
                   Validation Result
@@ -113,7 +117,7 @@ const MonacoEditor = () => {
           </div>
         </Panel>
         <PanelResizeHandle className="pillar-handle" />
-        <Panel defaultSize={visualizePanelMaxSize}>
+        <Panel defaultSize={visualizePanelMaxWidth}>
           {isEditorReady && <SchemaVisualization schema={schemaValue} />}
         </Panel>
       </PanelGroup>
