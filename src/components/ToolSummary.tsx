@@ -9,7 +9,7 @@ const ToolSummary = () => {
       >
         {toolSummary.title}
       </div> */}
-      <div className="max-w-3xl text-md text-[var(--tool-content-color)]">
+      <div className="max-w-3xl mb-2 text-md text-[var(--tool-content-color)]">
         {toolSummary.summary}
       </div>
     </div>
