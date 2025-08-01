@@ -16,6 +16,7 @@ type CyEdge = {
     id : string
     source: string;
     target: string;
+    edge?: string,
   };
 };
 
@@ -27,6 +28,22 @@ interface SchemaContext{
   preserveRef: boolean,
   visitedSchema: WeakMap<object, string>
   rootSchema :any
+}
+
+// Reference Resolver function
+function resolveReferece(ref : string, rootSchema : any){
+  if(!ref || !ref.startsWith('#/')) return;
+  const path = ref.slice(2).split('/');  /* e.g. : "#/defs/users" -> 'defs/users/ -> ['defs','users'] */
+  let current = rootSchema;
+  for(const key of path){
+    if(current && typeof current === 'object'){
+      current = current[key]
+    }
+    else{
+      return null;
+    }
+  }
+ return current
 }
 
 export async function schemaPreserveRef(schema:any , options : {maxDepth?: number, resolveInternal?: boolean, resolveExternal?: boolean} = {}) {
@@ -157,16 +174,17 @@ export function schemaParse(schema: any, parentId: string | null = null, element
       id: nodeId,
       label: label,
       description: schema.description,
-      ...(context.depth === 0 && { isCenter: true })
+      ...(context.depth === 0 ? { isCenter: true } : {})
     },
   });
-  if (parentId) {
+  if (parentId && parentId !== nodeId) {
     const edgeId = `${parentId}_${nodeId}`;
     context.elements.push({
       data: {
         id : edgeId,
         source: parentId,
         target: nodeId,
+        edge : 'nested'
       },
     });
   }
@@ -174,6 +192,73 @@ export function schemaParse(schema: any, parentId: string | null = null, element
     ...context,
     depth: context.depth + 1
   };
+
+  if (schema.$defs && typeof schema.$defs === 'object') {
+    for(const [defKey, defValue] of Object.entries(schema.$defs)){
+      const defSchema = defValue as Record<string , any>
+      const defId = `def_${defKey}`;
+      const childContext = {
+        ...context,
+        depth : context.depth + 1
+      }
+      // crearting a def node
+      context.elements.push({
+        data : {
+          id : defId,
+          type : defSchema.type || 'definition',
+          label : defKey
+        }
+      })
+
+      // if the parent exists
+      if(parentId){
+        context.elements.push({
+         data : {
+            id : `${parentId}_${defId}`,
+            source : parentId,
+            target : defId
+          }
+        })
+      }
+      schemaParse(defSchema, defId, elements, defId, childContext)
+    }
+  }
+ 
+  if(type === '$ref' && context.preserveRef){
+    const refNodeId = nodeId;
+    const ref = schema.$ref;
+    let reflabel = ref;
+    
+    if(ref.startsWith('#/')){
+      const parts = ref.slice(2).split('/');
+      console.log("THe parts of ref is ", parts)
+      reflabel = parts[parts.length -1]
+    }
+
+    const resolvedSchema = resolveReferece(schema.$ref, context.rootSchema);
+    if (resolvedSchema) {
+      const targetId = `resolved_${reflabel}`;
+      
+      // Add edge from ref to resolved definition
+      context.elements.push({
+        data: {
+          id: `${refNodeId}_to_${targetId}`,
+          source: refNodeId,
+          target: targetId,
+          edge: 'resolves_to'
+        }
+      });
+      
+      const childContext = {
+        ...context,
+        depth: context.depth + 1
+      };
+      
+      // Recursively parse resolved schema
+      schemaParse(resolvedSchema, targetId, elements, refNodeId, childContext);
+    }
+    return elements;
+  } 
 
   if (type === 'anyOf' && schema.anyOf && Array.isArray(schema.anyOf)) {
     schema.anyOf.forEach((subSchema: any, index: number) => {
@@ -291,16 +376,22 @@ export function schemaParse(schema: any, parentId: string | null = null, element
   // Handle patternProperties
   if (schema.patternProperties && typeof schema.patternProperties === 'object' && schema.patternProperties !== null) {
     Object.entries(schema.patternProperties).forEach(([pattern ,patternSchema], index) => {
-      schemaParse(patternSchema, nodeId, context.elements, `${path}_patternProperties_${pattern}`, childContext);
+      schemaParse(patternSchema, nodeId, context.elements, `${path}_${pattern}_${index}`, childContext);
     });
   }
  if (schema.type === 'array') {
     if (schema.prefixItems && Array.isArray(schema.prefixItems)) {
       schema.prefixItems.forEach((itemsSchema: any, index: any) => {
-        schemaParse(itemsSchema, nodeId, context.elements, `${path}[${index}]`, childContext);
+        schemaParse(itemsSchema, nodeId, context.elements, `${path}_prefixItem_[${index}]`, childContext);
       });
     }
-    if(schema.items && typeof schema.items === 'object') {
+    if (Array.isArray(schema.items)) {
+      // Tuple validation
+      schema.items.forEach((itemSchema: any, index: number) => {
+        schemaParse(itemSchema, nodeId, context.elements, `${path}_item_${index}`, childContext);
+      });
+    } else if (schema.items && typeof schema.items === 'object') {
+      // Regular schema for all array items
       schemaParse(schema.items, nodeId, context.elements, `${path}_item`, childContext);
     }
     if (schema.unevaluatedItems) { // for disallow the extra items
