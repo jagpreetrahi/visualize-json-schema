@@ -1,11 +1,13 @@
 import Editor from "@monaco-editor/react";
 import schema from "../data/dummy-schema.json";
-import { useCallback, useContext, useState, useMemo } from "react";
+import { useCallback, useContext, useState, useMemo} from "react";
 import { MonacoEditorContext } from "../contexts/EditorContext";
 import { ThemeContext } from "../contexts/ThemeContext";
 import * as monaco from "monaco-editor";
 import SchemaVisualization from "./SchemaVisualization";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import {registerSchema, unregisterSchema} from "@hyperjump/json-schema/draft-2020-12"
+import {compile, getSchema} from "@hyperjump/json-schema/experimental"
 import ToolSummary from "./ToolSummary";
 
 const MonacoEditor = () => {
@@ -30,7 +32,7 @@ const MonacoEditor = () => {
   const visualizePanelMaxWidth: number = 100 - editorPanelMaxWidth;
   // validates the JSON Schema before creation the visualization and prevent the un-necessary creation
   const updateVisualizationFromJSON = useCallback(
-    (jsonString: string | undefined) => {
+    async (jsonString: string | undefined) => {
       if (!jsonString || jsonString.trim() === "") {
         setValidationError("Empty JSON schema");
         return;
@@ -41,9 +43,24 @@ const MonacoEditor = () => {
           setSchemaValue(jsonString);
           setValidationError("");
         }
+        const parsedSchemaId = typeof parsedSchema.$id === 'string' ?   parsedSchema.$id : "https://example.com.local";
+        unregisterSchema(parsedSchemaId);
+        if (!parsedSchema.$schema) {
+          parsedSchema.$schema = "https://json-schema.org/draft/2020-12/schema";
+          setValidationError("Please also provide $schema for better practice") 
+        }
+        try {
+          registerSchema(parsedSchema, parsedSchemaId);
+          const getRegisterSchema = await getSchema(parsedSchemaId);
+          await compile(getRegisterSchema);
+          setSchemaValue(jsonString);
+          
+        } catch (error : any) {
+           setValidationError(`Schema Validation Error : ${error.message}`)
+        }
         window.sessionStorage.setItem("JSON Schema", jsonString);
-      } catch (error: any) {
-        setValidationError(`Invalid JSON: ${error.message}`);
+      } catch (parseError: any) {
+        setValidationError(`Invalid JSON: ${parseError.message}`);
       }
     },
     [schemaValue]
@@ -73,7 +90,7 @@ const MonacoEditor = () => {
     <div
       ref={containerRef}
         // className={`${isFullScreen ? "fixed inset-0 z-50" : "relative z-50"}`}
-        className="absolute h-[85vh] w-full top-[10vh] bottom-[30vh] bg-amber-500"
+        className="absolute h-[85vh] w-full top-[10vh] bottom-[30vh] "
     >
         {/* {!isFullScreen && <ToolSummary />} */}
         {isFullScreen ? (
@@ -118,7 +135,7 @@ const MonacoEditor = () => {
         </Panel>
         <PanelResizeHandle className="pillar-handle" />
         <Panel defaultSize={visualizePanelMaxWidth}>
-          {isEditorReady && <SchemaVisualization schema={schemaValue} />}
+          {isEditorReady  && <SchemaVisualization schema={schemaValue} />}
         </Panel>
       </PanelGroup>
     </div>
