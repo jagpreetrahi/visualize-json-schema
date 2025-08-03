@@ -12,11 +12,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^14.1.1",
     "@hyperjump/json-schema": "^1.14.1",
     "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/vite": "^4.1.10",
     "cytoscape": "^3.32.0",
     "cytoscape-dagre": "^2.5.0",
+    "cytoscape-node-html-label": "^1.2.2",
     "monaco-editor": "^0.52.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

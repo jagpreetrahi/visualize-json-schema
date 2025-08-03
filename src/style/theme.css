@@ -33,13 +33,14 @@
   --control-bg-color: #3c3c3c;
   --validation-bg-color: #242424;
   --pillar-bg-color: #444444;
+  --validation-heading-color: #999999;
 
   /* Text color */
   --text-color: #f0f0f0;
   --bottom-text-color: #ffffff;
-  --tool-name-color: #60a5fa; 
-  --tool-content-color: #999999; 
+  --tool-name-color: #fff; 
+  --tool-content-color: #fff; 
   --navigation-text-color: #ffffff;
-  --view-text-color: #d1d5db;
-  --validation-text-color: #d1d5db;
+  --view-text-color: #fff;
+  --validation-text-color: #fff;
 }
