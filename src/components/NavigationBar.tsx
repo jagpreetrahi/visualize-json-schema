@@ -10,7 +10,7 @@ const NavigationBar = () => {
   const { toggleTheme } = useContext(ThemeContext);
   return (
     <>
-      <nav className="flex justify-between items-center h-[10vh] bg-amber-500">
+      <nav className="h-[10vh] flex justify-between items-center bg-amber-500">
         <div className="flex items-center">
           <img
             src="logo.png"
@@ -21,7 +21,7 @@ const NavigationBar = () => {
             <span>JSON Schema</span>
             <span>Visualization </span>
           </span>
-        </div>
+        </div> 
         <ul className="flex gap-5 mr-10">
           <li>
             <button

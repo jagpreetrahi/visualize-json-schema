@@ -6,8 +6,8 @@ export const MonacoEditorProvider = ({children } : any) => {
   const editorRef =  useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [isFullScreen , setIsFullScreen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const editorHeight : string = '80vh';
-  const editorWidth : string = '40vw';
+  const editorHeight : string = '90%';
+  const editorWidth : string = '100%';
   const toggleScreen = useCallback(() => {
     if(!document.fullscreenElement){
         containerRef.current?.requestFullscreen();

@@ -170,6 +170,6 @@ export const Graph = ({schema , exposeInstances} : {schema : string , exposeInst
         }
     }, [schema]);
     return (
-      <div id="cy" ref={cyRef} style={{height : 'calc(100vh - 8vh)'}} className="visualize "></div>
+      <div id="cy" ref={cyRef} className="visualize "></div>
     )
 }
