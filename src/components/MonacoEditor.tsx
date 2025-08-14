@@ -129,9 +129,8 @@ const MonacoEditor = () => {
             )}
           </div>
         </Panel>
-        {/* <PanelResizeHandle className="pillar-handle" /> */}
-        <PanelResizeHandle />
-        <Panel minSize={visualizePanelMinWidth}>
+        <PanelResizeHandle className="panel-resize-handle" />
+        <Panel minSize={visualizePanelMinWidth} className="flex flex-col relative">
           {isEditorReady && <SchemaVisualization schema={schemaValue} />}
         </Panel>
       </PanelGroup>
