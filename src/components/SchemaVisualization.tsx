@@ -155,11 +155,7 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
           >
             {item}
           </button>
-                  ))}
-                  ))}
-              </ul>
         ))}
-              </ul>
       </div>
 
       <div>
@@ -193,27 +189,27 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
       <div className="absolute bottom-[10px] left-[10px] visualize flex flex-row">
         <ul className="flex gap-2 rounded mr-5 px-2 py-1 bg-gray-300">
           <li>
-            <button className='custom-btn' onClick={handleCenter}>
-               <CgMaximize size={15}/>
+            <button className="cursor-pointer" onClick={handleCenter}>
+              <CgMaximize size={15} />
             </button>
           </li>
           <li>
-            <button className='custom-btn' onClick={handleZoomIn}>
-              <CgMathPlus size={15}/>
+            <button className="cursor-pointer" onClick={handleZoomIn}>
+              <CgMathPlus size={15} />
             </button>
           </li>
           <li>
-            <button className='custom-btn' onClick={handleZoomOut}>
-                <CgMathMinus size={15}/>
+            <button className="cursor-pointer" onClick={handleZoomOut}>
+              <CgMathMinus size={15} />
             </button>
           </li>
         </ul>
         <div>
           <input
             type="text"
-            maxLength={20}
-            placeholder="Search for node"
-            className='outline-none text-blue-700 border-b-2'
+            maxLength={30}
+            placeholder="search node"
+            className="outline-none text-[var(--bottom-bg-color)] border-b-2 text-center"
             onChange={handleInput}
           />
         </div>
