@@ -10,9 +10,9 @@ body{
   background-size: 30px 30px;
 }
 
-.pillar-handle {
-  width: 12px;
+.panel-resize-handle {
+  width: 5px;
+  /* background-color: var(--pillar-bg-color); */
   background-color: var(--pillar-bg-color);
   cursor: col-resize;
-  border-radius: 2px;
 }

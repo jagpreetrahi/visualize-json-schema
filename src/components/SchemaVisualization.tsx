@@ -1,193 +1,160 @@
-import cytoscape from 'cytoscape';
-import dagre from 'cytoscape-dagre'
-import React, {  useEffect, useRef } from 'react';
+import cytoscape from "cytoscape";
+import dagre from "cytoscape-dagre";
+import React, { useEffect, useRef, useState } from "react";
+import { CgMaximize, CgMathPlus, CgMathMinus, CgClose } from "react-icons/cg";
+import { Graph } from "./Graph";
 
-cytoscape.use(dagre)
+// use the dagre layout
+// cytoscape.use(dagre);
+const SchemaVisualization = ({ schema }: { schema: string }) => {
+  const views = ["Graph", "Tree"];
+  const cyRef = useRef<cytoscape.Core | null>(null);
 
-const SchemaVisualization = ({schema} : {schema : string}) => {
-  const cyRef = useRef<HTMLDivElement>(null);
-  /* Does not get destroy or re-creating everytime the component updates */
-  const cyInstanceRef = useRef<cytoscape.Core | null>(null);
-  // Types
-  type CyNode = {
-    data: {
-      type?: string,
-      id: string;
-      label: string;
-    };
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorPopup, setShowErrorPopup] = useState(true);
+
+  const [currentView, setCurrentView] = useState("Graph");
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const searchString = event.target.value;
+    const searchResult = handleSearch(searchString);
+    if (!searchResult) {
+      setErrorMessage(`${searchString} is not in schema`);
+    } else {
+      setErrorMessage("");
+    }
   };
 
-  type CyEdge = {
-    data: {
-      id : string
-      source: string;
-      target: string;
-    };
+  // change color of the node if there's a match
+  const handleSearch = (input: string) => {
+    let found = false;
+    const cy = cyRef.current;
+    if (!cy) return;
+
+    cy.nodes().forEach((node) => {
+      const label = node.data("label");
+      if (label === input) {
+        node.data("matched", true);
+        found = true;
+      } else {
+        node.data("matched", false);
+      }
+    });
+    return found;
   };
 
-  type CyElement = CyNode | CyEdge;
-
- 
-
-  /* Recursive function for storing the schema properties in the array of elements */ 
-  function schemaParse( schema: any, parentId: string | null = null, elements: CyElement[] = [], path = 'root'): CyElement[] {
-     if (!schema || typeof schema !== 'object') {
-        console.warn("Invalid or missing schema at path:", path);
-      }
-     
-    const nodeId = path || `node-${Math.random().toString(36).substring(2, 8)}`;
-    if (!nodeId || typeof nodeId !== 'string') {
-      console.warn("Skipping invalid node ID", schema);
-      return elements;
-    }
-    /*pushing the nodes and edges to the elements array */
-    elements.push({
-      data: {
-        type : schema.type,
-        id: nodeId,
-        label: schema.title || path.split('.').slice(-1)[0],
-      },
-    });
-
-    if (parentId) {
-      const edgeId = `${parentId}->${nodeId}`; // Unique ID format
-      elements.push({
-        data: {
-          id : edgeId,
-          source: parentId,
-          target: nodeId,
-        },
-      });
-    }
-    
-    const type = schema.type;
-    
-    if (type === 'object'   && schema.properties) {
-      for (const [key, value] of Object.entries(schema.properties)) {
-        schemaParse(value, nodeId, elements, `${path}.${key}`);
-      }
-    } else if (schema.type === 'array' && schema.items) {
-      const itemPath = `${path}[]`;
-      schemaParse(schema.items, nodeId, elements, itemPath);
-    }
-   
-    
-    return elements;
-
-  }
-
-  // Initialize Cytoscape once on mount
   useEffect(() => {
-    if (!cyRef.current) return;
-    cyInstanceRef.current = cytoscape({
-      container: cyRef.current,
-      userPanningEnabled: true,
-      zoomingEnabled: true,
-      panningEnabled: true,
-      boxSelectionEnabled: false,
-      autounselectify: true,
-      style: [
-        {
-          selector: 'node',
-          style: {
-            content: 'data(label)',
-            shape: 'roundrectangle',
-            'background-color': '#007acc',
-            color: '#fff',
-            'font-size': '7px',
-            'text-wrap': 'wrap',
-            'text-max-width': '100px',
-            'text-valign': 'center',
-            padding : '2px',
-            width: 'label',
-            height: 'label',
-            'min-width': '40px',
-            'min-height': '20px',
-          },
-        },
-        {
-          selector: 'node[type="object"]',
-          style: { 'background-color': 'red', 'label': 'data(label)'}
-        },
-        {
-          selector: 'node[type="array"]',
-          style: { 'background-color': 'yellow', 'label': 'data(label)' }
-        },
-
-        {
-          selector: 'edge',
-          style: {
-            width: 0.5,
-            'line-color': '#ccc',
-            'target-arrow-color': '#ccc',
-            'target-arrow-shape': 'triangle',
-          },
-        },
-      ],
-      layout: {
-        name: 'dagre',
-        rankDir: 'LR',
-        nodeSep: 15,
-        edgeSep: 5,
-        rankSep: 20,
-        animate: false,
-        fit: false,
-      } as any,
-    });
-     cyInstanceRef.current.centre();
-     cyInstanceRef.current.zoom(3);
-
-    // Cleanup on unmount
-    return () => {
-      cyInstanceRef.current?.destroy();
-    };
-  }, []);
-
-  // Update elements/layout when schema changes
-  useEffect(() => {
-    if (!schema || !cyRef.current || !cyInstanceRef.current) return;
-    let parsedSchema : any;
-
-    try {
-      parsedSchema = JSON.parse(schema);
-    
-    }  
-    catch (error){
-      console.error('Invalid JSON:', error);
-      return;
+    if (errorMessage) {
+      setShowErrorPopup(true);
+      const timer = setTimeout(() => {
+        setShowErrorPopup(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowErrorPopup(false);
     }
-    const elements = schemaParse(parsedSchema);
-    // Validate elements before update
-    const hasInvalidElements =  elements.some(el => !('id' in el.data) || !el.data.id);
-    if (hasInvalidElements) {
-      console.error("Invalid elements detected", elements);
-      return;
-    }
+  }, [errorMessage]);
 
-    // Update elements (nodes and edges)
-    cyInstanceRef.current.json({ elements });
+  const handleCenter = () => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    cy.center(cy.elements());
+  };
 
-    // Re-run layout
-    cyInstanceRef.current.layout({
-      name: 'dagre',
-      rankDir: 'LR',
-      nodeSep: 15,
-      edgeSep: 5,
-      rankSep: 20,
-      animate: false,
-      fit: false,
-    } as any).run();
+  const handleZoomIn = () => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    const currentZoomLevel = cy.zoom();
+    const newZoomLevel = parseFloat(
+      Math.min(currentZoomLevel + 0.1, cy.maxZoom()).toFixed(2)
+    );
+    const center = { x: cy.width() / 2, y: cy.height() / 2 };
+    cy.zoom({ level: newZoomLevel, renderedPosition: center });
+  };
 
-    cyInstanceRef.current.center()  
-    cyInstanceRef.current.zoom(3);
-    cyInstanceRef.current.nodes().ungrabify();  /*  It prevent the draggable of nodes */
-
-  }, [schema]);
+  const handleZoomOut = () => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    const currentZoomLevel = cy.zoom();
+    const newZoomLevel = parseFloat(
+      Math.max(currentZoomLevel - 0.1, 0.1).toFixed(2)
+    );
+    const center = { x: cy.width() / 2, y: cy.height() / 2 };
+    cy.zoom({ level: newZoomLevel, renderedPosition: center });
+  };
 
   return (
-    <div>
-      <div id="cy" ref={cyRef} style={{ width: '100vw', height: '100vh'}} className="visualize"/>
-    </div>
+    <>
+      {/* Cytoscape  */}
+      {currentView === "Graph" ? (
+        <Graph schema={schema} exposeInstances={cyRef} />
+      ) : (
+        <></>
+      )}
+
+      {/* View option*/}
+      <div className="absolute top-[10px] left-[10px] rounded-md overflow-hidden border border-gray-300">
+        {views.map((item, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentView(item)}
+            className={`px-3 py-1 text-sm font-medium cursor-pointer
+        ${
+          currentView === item
+            ? "bg-[var(--bottom-bg-color)] text-gray-100"
+            : "bg-gray-100 text-[var(--bottom-bg-color)] hover:bg-gray-200"
+        }`}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      {/*Error Message */}
+      {errorMessage && showErrorPopup && (
+        <div className="absolute bottom-[50px] left-[100px] flex gap-2 px-2 py-1 bg-red-500 text-white rounded-md shadow-lg">
+          <div className="text-sm font-medium tracking-wide font-roboto">
+            {errorMessage}
+          </div>
+          <button
+            className="cursor-pointer"
+            onClick={() => setShowErrorPopup(false)}
+          >
+            <CgClose size={18} />
+          </button>
+        </div>
+      )}
+
+      {/* Bottom controls */}
+      <div className="absolute bottom-[10px] left-[10px] flex flex-row">
+        <ul className="flex gap-2 rounded mr-5 px-2 py-1 bg-gray-300">
+          <li>
+            <button className="cursor-pointer" onClick={handleCenter}>
+              <CgMaximize size={15} />
+            </button>
+          </li>
+          <li>
+            <button className="cursor-pointer" onClick={handleZoomIn}>
+              <CgMathPlus size={15} />
+            </button>
+          </li>
+          <li>
+            <button className="cursor-pointer" onClick={handleZoomOut}>
+              <CgMathMinus size={15} />
+            </button>
+          </li>
+        </ul>
+        <div>
+          <input
+            type="text"
+            maxLength={30}
+            placeholder="search node"
+            className="outline-none text-[var(--bottom-bg-color)] border-b-2 text-center"
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+    </>
   );
 };
 

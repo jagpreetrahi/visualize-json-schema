@@ -2,12 +2,12 @@ import { BsLinkedin, BsGithub, BsSlack, BsTwitterX } from "react-icons/bs";
 
 const BottomBar = () => {
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-[var(--bottom-bg-color)]  px-4 py-2 z-50 text-[var(--bottom-text-color)]">
+    <div className="h-[5vh] bg-[var(--bottom-bg-color)]  px-4 py-1.5 text-[var(--bottom-text-color)]">
       <div className="flex flex-col md:flex-row">
         <div className="w-full">
           Copyright © 2025 visualize-json-schema Authors.
         </div>
-        <ul className="flex px-2 gap-4">
+        <ul className="flex gap-4">
           <li>
             <a
               href="https://github.com/jagpreetrahi/visualize-json-schema"

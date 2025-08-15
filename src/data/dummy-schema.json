@@ -19,14 +19,6 @@
     },
     "employmentType": {
       "type": "string"
-    },
-    "salary": {
-      "type": "number",
-      "minimum": 0
-    },
-    "applicationDeadline": {
-      "type": "string",
-      "format": "date"
     }
   }
 }
