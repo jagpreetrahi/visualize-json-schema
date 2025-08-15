@@ -3,62 +3,35 @@ import dagre from "cytoscape-dagre";
 import React, { useEffect, useRef, useState } from "react";
 import { CgMaximize, CgMathPlus, CgMathMinus, CgClose } from "react-icons/cg";
 import { Graph } from "./Graph";
-import { CgChevronDown } from "react-icons/cg";
 
 // use the dagre layout
 cytoscape.use(dagre);
 const SchemaVisualization = ({ schema }: { schema: string }) => {
   const cyRef = useRef<cytoscape.Core | null>(null);
-  // view option for  visualization
+
   const view = ["Graph", "Tree"];
   const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorPopup, setShowErrorPopup] = useState(true);
+  
   const [zoomlevel, setZoomlevel] = useState(1);
-  const [debouncedValue, setDebouncedValue] = useState("");
-  const [inputValue, setInputValue] = useState("");
-  const [closeError, setCloseError] = useState(false);
-  const [isView, setIsView] = useState(false);
   const [isSelected, setIsSelected] = useState("Graph");
-  // deeply find the key in the schema
-  const RecursivelyKeys = (
-    schema: any,
-    findkey: string
-  ): string | undefined => {
-    if (!schema || typeof schema !== "object") return;
-    if (schema.properties && typeof schema.properties === "object") {
-      for (const key of Object.keys(schema.properties)) {
-        if (key === findkey) return key;
-        const result = RecursivelyKeys(schema.properties[key], findkey);
-        if (result) return result;
-      }
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const searchString = event.target.value;
+    const searchResult = handleSearch(searchString);
+    if (!searchResult) {
+      setErrorMessage(`${searchString} is not in schema`);
+    } else {
+      setErrorMessage("");
     }
-    // for an array
-    if (schema?.items) {
-      if (Array.isArray(schema.items)) {
-        for (const item of schema.items) {
-          const findItem = RecursivelyKeys(item, findkey);
-          if (findItem) return findItem;
-        }
-      } else {
-        return RecursivelyKeys(schema.items, findkey);
-      }
-    }
-    return;
   };
 
-  // track the real type value
-  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newInput = event.target.value;
-    setInputValue(newInput);
-    setErrorMessage("");
-    if (newInput) {
-      handlePointValue(newInput);
-    }
-  };
-  // change the color after or before matches
-  const handlePointValue = (input: any) => {
+  // change color of the node if there's a match
+  const handleSearch = (input: string) => {
+    let found = false;
     const cy = cyRef.current;
     if (!cy) return;
-    let found = false;
+
     cy.nodes().forEach((node) => {
       const label = node.data("label");
       if (label === input) {
@@ -71,40 +44,15 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
     return found;
   };
 
-  // debouncing the input value
-  useEffect(() => {
-    const delayValue = setTimeout(() => {
-      setDebouncedValue(inputValue);
-    }, 500);
-    return () => clearTimeout(delayValue);
-  }, [inputValue]);
-
-  // Validates the value only after the user stop to search
-  useEffect(() => {
-    if (!debouncedValue) {
-      // don't validate it on the empty value;
-      setErrorMessage("");
-      return;
-    }
-    try {
-      const parsedSchema = JSON.parse(schema);
-      // check whether the value is found or not
-      const isFound = RecursivelyKeys(parsedSchema, debouncedValue);
-      if (!isFound) {
-        setErrorMessage(`${debouncedValue} not in properties`);
-      } else {
-        setErrorMessage("");
-        handlePointValue(debouncedValue);
-      }
-    } catch (error) {
-      console.error("Error parsing JSON Schema:", error);
-      setErrorMessage("Invalid schema format");
-    }
-  }, [debouncedValue]);
-
   useEffect(() => {
     if (errorMessage) {
-      setCloseError(false);
+      setShowErrorPopup(true);
+      const timer = setTimeout(() => {
+        setShowErrorPopup(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowErrorPopup(false);
     }
   }, [errorMessage]);
 
@@ -159,18 +107,21 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
       </div>
 
       {/*Error Message */}
-      {errorMessage && !closeError && (
+      {errorMessage && showErrorPopup && (
         <div className="absolute bottom-[50px] left-[100px] flex gap-2 px-2 py-1 bg-red-500 text-white rounded-md shadow-lg">
           <div className="text-sm font-medium tracking-wide font-roboto">
             {errorMessage}
           </div>
-          <button onClick={() => setCloseError(true)}>
+          <button
+            className="cursor-pointer"
+            onClick={() => setShowErrorPopup(false)}
+          >
             <CgClose size={18} />
           </button>
         </div>
       )}
 
-      {/* Below controls */}
+      {/* Bottom controls */}
       <div className="absolute bottom-[10px] left-[10px] visualize flex flex-row">
         <ul className="flex gap-2 rounded mr-5 px-2 py-1 bg-gray-300">
           <li>
@@ -195,7 +146,7 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
             maxLength={30}
             placeholder="search node"
             className="outline-none text-[var(--bottom-bg-color)] border-b-2 text-center"
-            onChange={handleInput}
+            onChange={handleChange}
           />
         </div>
       </div>
