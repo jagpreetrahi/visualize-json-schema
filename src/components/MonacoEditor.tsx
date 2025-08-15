@@ -95,7 +95,7 @@ const MonacoEditor = () => {
   // }, [validationError]);
 
   return (
-    <div ref={containerRef} className="h-[85vh] flex flex-col bg-red-200">
+    <div ref={containerRef} className="h-[85vh] flex flex-col">
       {isFullScreen ? (
         <div className="w-full px-1 bg-[var(--view-bg-color)] justify-items-end">
           <div className="text-[var(--view-text-color)]">{toggleButton}</div>

@@ -5,7 +5,7 @@ import { CgMaximize, CgMathPlus, CgMathMinus, CgClose } from "react-icons/cg";
 import { Graph } from "./Graph";
 
 // use the dagre layout
-cytoscape.use(dagre);
+// cytoscape.use(dagre);
 const SchemaVisualization = ({ schema }: { schema: string }) => {
   const views = ["Graph", "Tree"];
   const cyRef = useRef<cytoscape.Core | null>(null);
@@ -65,7 +65,9 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
     const cy = cyRef.current;
     if (!cy) return;
     const currentZoomLevel = cy.zoom();
-    const newZoomLevel = parseFloat(Math.min(currentZoomLevel + 0.1, cy.maxZoom()).toFixed(2));
+    const newZoomLevel = parseFloat(
+      Math.min(currentZoomLevel + 0.1, cy.maxZoom()).toFixed(2)
+    );
     const center = { x: cy.width() / 2, y: cy.height() / 2 };
     cy.zoom({ level: newZoomLevel, renderedPosition: center });
   };
@@ -74,7 +76,9 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
     const cy = cyRef.current;
     if (!cy) return;
     const currentZoomLevel = cy.zoom();
-    const newZoomLevel = parseFloat(Math.max(currentZoomLevel - 0.1, 0.1).toFixed(2));
+    const newZoomLevel = parseFloat(
+      Math.max(currentZoomLevel - 0.1, 0.1).toFixed(2)
+    );
     const center = { x: cy.width() / 2, y: cy.height() / 2 };
     cy.zoom({ level: newZoomLevel, renderedPosition: center });
   };
@@ -82,7 +86,11 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
   return (
     <>
       {/* Cytoscape  */}
-      <Graph schema={schema} exposeInstances={cyRef} />
+      {currentView === "Graph" ? (
+        <Graph schema={schema} exposeInstances={cyRef} />
+      ) : (
+        <></>
+      )}
 
       {/* View option*/}
       <div className="absolute top-[10px] left-[10px] rounded-md overflow-hidden border border-gray-300">
@@ -118,7 +126,7 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
       )}
 
       {/* Bottom controls */}
-      <div className="absolute bottom-[10px] left-[10px] visualize flex flex-row">
+      <div className="absolute bottom-[10px] left-[10px] flex flex-row">
         <ul className="flex gap-2 rounded mr-5 px-2 py-1 bg-gray-300">
           <li>
             <button className="cursor-pointer" onClick={handleCenter}>
