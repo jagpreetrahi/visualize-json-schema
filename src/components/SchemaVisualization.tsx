@@ -7,14 +7,13 @@ import { Graph } from "./Graph";
 // use the dagre layout
 cytoscape.use(dagre);
 const SchemaVisualization = ({ schema }: { schema: string }) => {
+  const views = ["Graph", "Tree"];
   const cyRef = useRef<cytoscape.Core | null>(null);
 
-  const view = ["Graph", "Tree"];
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorPopup, setShowErrorPopup] = useState(true);
-  
-  const [zoomlevel, setZoomlevel] = useState(1);
-  const [isSelected, setIsSelected] = useState("Graph");
+
+  const [currentView, setCurrentView] = useState("Graph");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const searchString = event.target.value;
@@ -59,28 +58,25 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
   const handleCenter = () => {
     const cy = cyRef.current;
     if (!cy) return;
-    cy.zoom(zoomlevel);
-    // Center all elements (without changing zoom)
     cy.center(cy.elements());
   };
-  // increase  the zoom
+
   const handleZoomIn = () => {
     const cy = cyRef.current;
     if (!cy) return;
-    const currentZoom = cy.zoom();
-    const newZoom = Math.min(currentZoom + 0.1, cy.maxZoom());
+    const currentZoomLevel = cy.zoom();
+    const newZoomLevel = parseFloat(Math.min(currentZoomLevel + 0.1, cy.maxZoom()).toFixed(2));
     const center = { x: cy.width() / 2, y: cy.height() / 2 };
-    cy.zoom({ level: newZoom, renderedPosition: center });
-    setZoomlevel(newZoom);
+    cy.zoom({ level: newZoomLevel, renderedPosition: center });
   };
+
   const handleZoomOut = () => {
     const cy = cyRef.current;
     if (!cy) return;
-    const currentZoom = cy.zoom();
-    const newZoom = Math.max(currentZoom - 0.1, 0.1);
+    const currentZoomLevel = cy.zoom();
+    const newZoomLevel = parseFloat(Math.max(currentZoomLevel - 0.1, 0.1).toFixed(2));
     const center = { x: cy.width() / 2, y: cy.height() / 2 };
-    cy.zoom({ level: newZoom, renderedPosition: center });
-    setZoomlevel(newZoom);
+    cy.zoom({ level: newZoomLevel, renderedPosition: center });
   };
 
   return (
@@ -90,13 +86,13 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
 
       {/* View option*/}
       <div className="absolute top-[10px] left-[10px] rounded-md overflow-hidden border border-gray-300">
-        {view.map((item, idx) => (
+        {views.map((item, idx) => (
           <button
             key={idx}
-            onClick={() => setIsSelected(item)}
+            onClick={() => setCurrentView(item)}
             className={`px-3 py-1 text-sm font-medium cursor-pointer
         ${
-          isSelected === item
+          currentView === item
             ? "bg-[var(--bottom-bg-color)] text-gray-100"
             : "bg-gray-100 text-[var(--bottom-bg-color)] hover:bg-gray-200"
         }`}
