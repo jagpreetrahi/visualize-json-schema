@@ -5,7 +5,7 @@ import { CgMaximize, CgMathPlus, CgMathMinus, CgClose } from "react-icons/cg";
 import { Graph } from "./Graph";
 
 // use the dagre layout
-// cytoscape.use(dagre);
+cytoscape.use(dagre);
 const SchemaVisualization = ({ schema }: { schema: string }) => {
   const views = ["Graph", "Tree"];
   const cyRef = useRef<cytoscape.Core | null>(null);

@@ -1,6 +1,6 @@
 import Editor from "@monaco-editor/react";
 import schema from "../data/dummy-schema.json";
-import { useCallback, useContext, useState, useMemo } from "react";
+import { useCallback, useContext, useState } from "react";
 import { MonacoEditorContext } from "../contexts/EditorContext";
 import { ThemeContext } from "../contexts/ThemeContext";
 import * as monaco from "monaco-editor";
@@ -11,7 +11,6 @@ import {
   unregisterSchema,
 } from "@hyperjump/json-schema/draft-2020-12";
 import { compile, getSchema } from "@hyperjump/json-schema/experimental";
-import ToolSummary from "./ToolSummary";
 
 const MonacoEditor = () => {
   const {
