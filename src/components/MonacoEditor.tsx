@@ -100,8 +100,9 @@ const MonacoEditor = () => {
         <div className="w-full px-1 bg-[var(--view-bg-color)] justify-items-end">
           <div className="text-[var(--view-text-color)]">{toggleButton}</div>
         </div>
-      ) : (
-        <ToolSummary />
+      ) : (<>
+        {/* <ToolSummary /> */}
+      </>
       )}
       <PanelGroup direction="horizontal">
         <Panel

@@ -75,7 +75,7 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
   useEffect(() => {
     const delayValue = setTimeout(() => {
       setDebouncedValue(inputValue);
-    }, 1500);
+    }, 500);
     return () => clearTimeout(delayValue);
   }, [inputValue]);
 
@@ -146,11 +146,11 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
           <button
             key={idx}
             onClick={() => setIsSelected(item)}
-            className={`px-3 py-1 text-sm font-medium transition-colors duration-200
+            className={`px-3 py-1 text-sm font-medium cursor-pointer
         ${
           isSelected === item
             ? "bg-[var(--bottom-bg-color)] text-gray-100"
-            : "bg-gray-100 text-[var(--bottom-bg-color)] hover:bg-gray-100"
+            : "bg-gray-100 text-[var(--bottom-bg-color)] hover:bg-gray-200"
         }`}
           >
             {item}
@@ -158,32 +158,17 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
         ))}
       </div>
 
-      <div>
-        {/*Error Message */}
-        <div className="absolute top-0 right-10 mt-2 w-auto">
-          <div>
-            {errorMessage && !closeError && (
-              <div className="flex flex-row gap-x-2 px-2 py-1 bg-red-400 rounded-sm">
-                <p
-                  style={{
-                    letterSpacing: "1px",
-                    color: "white",
-                    fontFamily: "Roboto, sans-serif",
-                  }}
-                >
-                  {errorMessage}
-                </p>
-                <button
-                  className="cursor-pointer"
-                  onClick={() => setCloseError(true)}
-                >
-                  <CgClose color="white" />
-                </button>
-              </div>
-            )}
+      {/*Error Message */}
+      {errorMessage && !closeError && (
+        <div className="absolute bottom-[50px] left-[100px] flex gap-2 px-2 py-1 bg-red-500 text-white rounded-md shadow-lg">
+          <div className="text-sm font-medium tracking-wide font-roboto">
+            {errorMessage}
           </div>
+          <button onClick={() => setCloseError(true)}>
+            <CgClose size={18} />
+          </button>
         </div>
-      </div>
+      )}
 
       {/* Below controls */}
       <div className="absolute bottom-[10px] left-[10px] visualize flex flex-row">
