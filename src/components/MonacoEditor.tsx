@@ -1,6 +1,7 @@
 import Editor from "@monaco-editor/react";
 import schema from "../data/dummy-schema.json";
 import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { MonacoEditorContext } from "../contexts/EditorContext";
 import { ThemeContext } from "../contexts/ThemeContext";
 import * as monaco from "monaco-editor";

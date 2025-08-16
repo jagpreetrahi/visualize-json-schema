@@ -13,7 +13,11 @@ const SchemaVisualization = ({ schema }: { schema: string | undefined }) => {
   const [currentView, setCurrentView] = useState("Graph");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const searchString = event.target.value;
+    const searchString = event.target.value.trim();
+    if(!searchString){
+      setErrorMessage("");
+      return;
+    }
     const searchResult = handleSearch(searchString);
     if (!searchResult) {
       setErrorMessage(`${searchString} is not in schema`);
@@ -86,7 +90,11 @@ const SchemaVisualization = ({ schema }: { schema: string | undefined }) => {
       {currentView === "Graph" ? (
         <Graph schema={schema} exposeInstances={cyRef} />
       ) : (
-        <></>
+        <div className="flex justify-center mt-5">
+          <div className="w-fit  tracking-wide text-red-600 px-4 py-2 border-2 rounded-md ">
+            <span>Tree visualization is not supported at the moment</span>
+          </div>
+        </div>
       )}
 
       {/* View option*/}
