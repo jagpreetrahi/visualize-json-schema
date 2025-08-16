@@ -1,12 +1,9 @@
 import cytoscape from "cytoscape";
-import dagre from "cytoscape-dagre";
 import React, { useEffect, useRef, useState } from "react";
 import { CgMaximize, CgMathPlus, CgMathMinus, CgClose } from "react-icons/cg";
 import { Graph } from "./Graph";
 
-// use the dagre layout
-cytoscape.use(dagre);
-const SchemaVisualization = ({ schema }: { schema: string }) => {
+const SchemaVisualization = ({ schema }: { schema: string | undefined }) => {
   const views = ["Graph", "Tree"];
   const cyRef = useRef<cytoscape.Core | null>(null);
 

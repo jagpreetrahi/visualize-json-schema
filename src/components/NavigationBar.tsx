@@ -1,13 +1,15 @@
 import { BsBrightnessHigh } from "react-icons/bs";
 import { FaGithub, FaSearch } from "react-icons/fa";
-import { MonacoEditorContext } from "../contexts/EditorContext";
-import { ThemeContext } from "../contexts/ThemeContext";
+// import { MonacoEditorContext } from "../contexts/EditorContext";
+// import { ThemeContext } from "../contexts/ThemeContext";
 import { useContext } from "react";
 import { Tooltip } from "react-tooltip";
+import { AppContext } from "../contexts/AppContext";
 
 const NavigationBar = () => {
-  const { toggleButton } = useContext(MonacoEditorContext);
-  const { toggleTheme } = useContext(ThemeContext);
+  // const { toggleButton } = useContext(MonacoEditorContext);
+  const { toggleButton, toggleTheme } = useContext(AppContext);
+  // const { toggleTheme } = useContext(ThemeContext);
   return (
     <nav className="h-[10vh] flex justify-between items-center shadow-lg relative z-10">
       <div className="flex items-center">

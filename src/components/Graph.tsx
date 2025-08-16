@@ -8,7 +8,7 @@ import nodeHtmlLabel from 'cytoscape-node-html-label';
 cytoscape.use(dagre)
 nodeHtmlLabel(cytoscape)
 
-export const Graph = ({schema , exposeInstances} : {schema : string , exposeInstances : React.RefObject<cytoscape.Core | null>}) => {
+export const Graph = ({schema , exposeInstances} : {schema : string | undefined , exposeInstances : React.RefObject<cytoscape.Core | null>}) => {
     const cyRef = useRef<HTMLDivElement>(null);
     /* Does not get destroy or re-creating everytime the component updates */
     const cyInstanceRef = useRef<cytoscape.Core | null>(null);

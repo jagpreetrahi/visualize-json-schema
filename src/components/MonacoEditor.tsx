@@ -1,76 +1,57 @@
 import Editor from "@monaco-editor/react";
 import schema from "../data/dummy-schema.json";
-import { useCallback, useContext, useState } from "react";
-import { MonacoEditorContext } from "../contexts/EditorContext";
-import { ThemeContext } from "../contexts/ThemeContext";
+import { useCallback, useContext, useState, useRef } from "react";
 import * as monaco from "monaco-editor";
 import SchemaVisualization from "./SchemaVisualization";
+import { AppContext } from "../contexts/AppContext";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import {
   registerSchema,
   unregisterSchema,
 } from "@hyperjump/json-schema/draft-2020-12";
-import { compile, getSchema } from "@hyperjump/json-schema/experimental";
 
 const MonacoEditor = () => {
-  const {
-    editorRef,
-    editorHeight,
-    editorWidth,
-    isFullScreen,
-    containerRef,
-    toggleButton,
-  } = useContext(MonacoEditorContext);
-  const { theme } = useContext(ThemeContext);
-  // Extract the schema to a state so that react tracks the schema updates
+  const { theme, isFullScreen, containerRef, toggleButton } =
+    useContext(AppContext);
+
+  const [validationError, setValidationError] = useState("");
+  const [isEditorReady, setIsEditorReady] = useState(false);
   const [schemaValue, setSchemaValue] = useState(
     JSON.stringify(schema, null, 2)
   );
-  const [validationError, setValidationError] = useState("");
-  const [isEditorReady, setIsEditorReady] = useState(false);
-  //define the panel size for editor and visualization
 
   const editorPanelMinWidth: number = 25;
   const editorPanelDefaultWidth: number = 35;
-
   const visualizePanelMinWidth: number = 60;
 
-  // validates the JSON Schema before creation the visualization and prevent the un-necessary creation
-  const updateVisualizationFromJSON = useCallback(
-    async (jsonString: string | undefined) => {
-      if (!jsonString || jsonString.trim() === "") {
-        setValidationError("Empty JSON schema");
-        return;
-      }
+  const editorHeight: string = "90%";
+  const editorWidth: string = "100%";
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+
+  const handleChange = useCallback(
+    async (jsonSchemaString: string | undefined) => {
+      setValidationError("empty");
+      if (!jsonSchemaString) return;
+
       try {
-        const parsedSchema = JSON.parse(jsonString);
-        if (typeof parsedSchema === "object" || parsedSchema !== null) {
-          setSchemaValue(jsonString);
-          setValidationError("");
+        setValidationError("");
+        const parsedSchema = JSON.parse(jsonSchemaString);
+        const schemaId = parsedSchema.$id;
+        unregisterSchema(schemaId);
+
+        registerSchema(parsedSchema, schemaId);
+        setSchemaValue(jsonSchemaString);
+
+        window.sessionStorage.setItem("JSON Schema", jsonSchemaString);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setValidationError(err.message);
+        } else {
+          setValidationError(String(err));
         }
-        const parsedSchemaId =
-          typeof parsedSchema.$id === "string"
-            ? parsedSchema.$id
-            : "https://example.com.local";
-        unregisterSchema(parsedSchemaId);
-        if (!parsedSchema.$schema) {
-          parsedSchema.$schema = "https://json-schema.org/draft/2020-12/schema";
-          setValidationError("Please also provide $schema for better practice");
-        }
-        try {
-          registerSchema(parsedSchema, parsedSchemaId);
-          const getRegisterSchema = await getSchema(parsedSchemaId);
-          await compile(getRegisterSchema);
-          setSchemaValue(jsonString);
-        } catch (error: any) {
-          setValidationError(`Schema Validation Error : ${error.message}`);
-        }
-        window.sessionStorage.setItem("JSON Schema", jsonString);
-      } catch (parseError: any) {
-        setValidationError(`Invalid JSON: ${parseError.message}`);
       }
     },
-    [schemaValue]
+    []
   );
 
   {
@@ -79,19 +60,11 @@ const MonacoEditor = () => {
   function MonacoEditorDidMount(editor: monaco.editor.IStandaloneCodeEditor) {
     editorRef.current = editor;
     setIsEditorReady(true);
-    const isItems = window.sessionStorage.getItem("JSON Schema");
-    if (isItems) {
-      setSchemaValue(isItems);
+    const prevSchema = window.sessionStorage.getItem("JSON Schema");
+    if (prevSchema) {
+      setSchemaValue(prevSchema);
     }
   }
-
-  // Memoized validation result to prevent unnecessary renders
-  // const validationDisplay = useMemo(() => {
-  //   if (validationError) {
-  //     return <span className="text-red-400">{validationError}</span>;
-  //   }
-  //   return <span className="text-green-400">✓ Valid JSON Schema</span>;
-  // }, [validationError]);
 
   return (
     <div ref={containerRef} className="h-[85vh] flex flex-col">
@@ -99,9 +72,8 @@ const MonacoEditor = () => {
         <div className="w-full px-1 bg-[var(--view-bg-color)] justify-items-end">
           <div className="text-[var(--view-text-color)]">{toggleButton}</div>
         </div>
-      ) : (<>
-        {/* <ToolSummary /> */}
-      </>
+      ) : (
+        <>{/* <ToolSummary /> */}</>
       )}
       <PanelGroup direction="horizontal">
         <Panel
@@ -119,18 +91,23 @@ const MonacoEditor = () => {
             options={{
               minimap: { enabled: false },
             }}
-            onChange={(value) => updateVisualizationFromJSON(value)}
+            onChange={handleChange}
           />
           <div className="flex-1 p-2 bg-[var(--validation-bg-color)] text-sm overflow-y-auto">
-            {validationError ? (
+            {validationError === "empty" ? null : validationError ? (
               <div className="text-red-400">{validationError}</div>
             ) : (
-              <div className="text-green-400">✓ Valid JSON Schema</div>
+              <div className="text-green-400 font-semibold">
+                ✓ Valid JSON Schema
+              </div>
             )}
           </div>
         </Panel>
         <PanelResizeHandle className="panel-resize-handle" />
-        <Panel minSize={visualizePanelMinWidth} className="flex flex-col relative">
+        <Panel
+          minSize={visualizePanelMinWidth}
+          className="flex flex-col relative"
+        >
           {isEditorReady && <SchemaVisualization schema={schemaValue} />}
         </Panel>
       </PanelGroup>
