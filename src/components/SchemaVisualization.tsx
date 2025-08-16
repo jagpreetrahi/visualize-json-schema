@@ -93,7 +93,11 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
       {currentView === "Graph" ? (
         <Graph schema={schema} exposeInstances={cyRef} />
       ) : (
-        <></>
+        <div className="flex justify-center mt-5">
+          <div className="w-fit  tracking-wide text-red-600 px-4 py-2 border-2 rounded-md ">
+            <span>Tree visualization is not supported at the moment</span>
+          </div>
+        </div>
       )}
 
       {/* View option*/}
