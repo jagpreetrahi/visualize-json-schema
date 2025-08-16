@@ -16,7 +16,7 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
   const [currentView, setCurrentView] = useState("Graph");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const searchString = event.target.value;
+    const searchString = event.target.value.trim();
     if(!searchString){
       setErrorMessage("");
       return;
