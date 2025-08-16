@@ -1,10 +1,9 @@
 import Editor from "@monaco-editor/react";
 import schema from "../data/dummy-schema.json";
-import { useCallback, useContext, useState } from "react";
-import { MonacoEditorContext } from "../contexts/EditorContext";
-import { ThemeContext } from "../contexts/ThemeContext";
+import { useCallback, useContext, useState, useRef } from "react";
 import * as monaco from "monaco-editor";
 import SchemaVisualization from "./SchemaVisualization";
+import { AppContext } from "../contexts/AppContext";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import {
   registerSchema,
@@ -12,16 +11,9 @@ import {
 } from "@hyperjump/json-schema/draft-2020-12";
 
 const MonacoEditor = () => {
-  const {
-    editorRef,
-    editorHeight,
-    editorWidth,
-    isFullScreen,
-    containerRef,
-    toggleButton,
-  } = useContext(MonacoEditorContext);
+  const { theme, isFullScreen, containerRef, toggleButton } =
+    useContext(AppContext);
 
-  const { theme } = useContext(ThemeContext);
   const [validationError, setValidationError] = useState("");
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [schemaValue, setSchemaValue] = useState(
@@ -31,6 +23,10 @@ const MonacoEditor = () => {
   const editorPanelMinWidth: number = 25;
   const editorPanelDefaultWidth: number = 35;
   const visualizePanelMinWidth: number = 60;
+
+  const editorHeight: string = "90%";
+  const editorWidth: string = "100%";
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   const handleChange = useCallback(
     async (jsonSchemaString: string | undefined) => {
