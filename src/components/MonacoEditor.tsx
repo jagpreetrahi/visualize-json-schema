@@ -3,6 +3,7 @@ import schema from "../data/dummy-schema.json";
 import { useCallback, useContext, useState, useRef } from "react";
 import * as monaco from "monaco-editor";
 import SchemaVisualization from "./SchemaVisualization";
+import FullscreenToggleButton from "./FullscreenToggleButton";
 import { AppContext } from "../contexts/AppContext";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import {
@@ -11,8 +12,7 @@ import {
 } from "@hyperjump/json-schema/draft-2020-12";
 
 const MonacoEditor = () => {
-  const { theme, isFullScreen, containerRef, toggleButton } =
-    useContext(AppContext);
+  const { theme, isFullScreen, containerRef } = useContext(AppContext);
 
   const [validationError, setValidationError] = useState("");
   const [isEditorReady, setIsEditorReady] = useState(false);
@@ -70,7 +70,9 @@ const MonacoEditor = () => {
     <div ref={containerRef} className="h-[85vh] flex flex-col">
       {isFullScreen ? (
         <div className="w-full px-1 bg-[var(--view-bg-color)] justify-items-end">
-          <div className="text-[var(--view-text-color)]">{toggleButton}</div>
+          <div className="text-[var(--view-text-color)]">
+            <FullscreenToggleButton />
+          </div>
         </div>
       ) : (
         <>{/* <ToolSummary /> */}</>

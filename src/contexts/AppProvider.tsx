@@ -6,7 +6,6 @@ import {
   type ReactNode,
 } from "react";
 import { AppContext } from "./AppContext";
-import { BsArrowsFullscreen } from "react-icons/bs";
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,23 +37,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  const toggleButton = (
-    <button
-      id="btn-toggle"
-      onClick={toggleFullScreen}
-      className="cursor-pointer"
-      style={{ color: "var(--navigation-text-color)" }}
-    >
-      <BsArrowsFullscreen />
-    </button>
-  );
-
   const value = {
     containerRef,
     isFullScreen,
-    toggleButton,
     theme,
     toggleTheme,
+    toggleFullScreen,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
