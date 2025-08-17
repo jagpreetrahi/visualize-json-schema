@@ -1,15 +1,13 @@
 import { BsBrightnessHigh } from "react-icons/bs";
 import { FaGithub, FaSearch } from "react-icons/fa";
-// import { MonacoEditorContext } from "../contexts/EditorContext";
-// import { ThemeContext } from "../contexts/ThemeContext";
 import { useContext } from "react";
 import { Tooltip } from "react-tooltip";
 import { AppContext } from "../contexts/AppContext";
+import FullscreenToggleButton from "./FullscreenToggleButton";
 
 const NavigationBar = () => {
-  // const { toggleButton } = useContext(MonacoEditorContext);
-  const { toggleButton, toggleTheme } = useContext(AppContext);
-  // const { toggleTheme } = useContext(ThemeContext);
+  const { toggleTheme } = useContext(AppContext);
+
   return (
     <nav className="h-[10vh] flex justify-between items-center shadow-lg relative z-10">
       <div className="flex items-center">
@@ -62,7 +60,7 @@ const NavigationBar = () => {
           </a>
         </li>
         <li>
-          <a aria-label="Toggle Screen">{toggleButton}</a>
+          <FullscreenToggleButton />
         </li>
       </ul>
     </nav>

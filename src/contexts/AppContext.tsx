@@ -1,9 +1,9 @@
-import { createContext, type ReactNode, type Ref } from "react";
+import { createContext, type Ref } from "react";
 
 type AppContextType = {
   containerRef: Ref<HTMLDivElement>;
   isFullScreen: boolean;
-  toggleButton: ReactNode;
+  toggleFullScreen: () => void;
 
   theme: string;
   toggleTheme: () => void;
