@@ -60,9 +60,7 @@ const NavigationBar = () => {
           </a>
         </li>
         <li>
-          <a aria-label="Toggle Screen">
-            <FullscreenToggleButton />
-          </a>
+          <FullscreenToggleButton />
         </li>
       </ul>
     </nav>

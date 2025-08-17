@@ -34,6 +34,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
