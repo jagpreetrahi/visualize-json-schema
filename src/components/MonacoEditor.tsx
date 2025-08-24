@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import schema from "../data/dummy-schema.json";
+import schema from "../data/defaultSchema.json";
 import { useCallback, useContext, useState, useRef } from "react";
 import * as monaco from "monaco-editor";
 import SchemaVisualization from "./SchemaVisualization";
