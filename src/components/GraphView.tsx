@@ -29,7 +29,7 @@ type GraphEdge = {
   target: string;
 };
 
-const TempGraph = ({ schema }: { schema: string }) => {
+const GraphView = ({ schema }: { schema: string }) => {
   const [nodes, setNodes, onNodeChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
 
@@ -122,7 +122,7 @@ const TempGraph = ({ schema }: { schema: string }) => {
   }, [schema, generateNodesAndEdges, getLayoutedElements, setNodes, setEdges]);
 
   return (
-    <div className="bg-gray-200" style={{ width: "100%", height: "100%" }}>
+    <div style={{ width: "100%", height: "100%" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -131,11 +131,11 @@ const TempGraph = ({ schema }: { schema: string }) => {
         deleteKeyCode={null}
         fitView
       >
-        <Background color="gray" size={2} gap={40} />
+        <Background />
         <Controls />
       </ReactFlow>
     </div>
   );
 };
 
-export default TempGraph;
+export default GraphView;
