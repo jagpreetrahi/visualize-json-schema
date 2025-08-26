@@ -12,6 +12,9 @@ import {
 
 import dagre from "@dagrejs/dagre";
 import "@xyflow/react/dist/style.css";
+import CustomNode from "./CustomReactFlowNode";
+
+const nodeTypes = { customNode: CustomNode };
 
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
@@ -21,6 +24,7 @@ const nodeHeight = 36;
 type GraphNode = {
   id: string;
   data: { label: string };
+  type: string;
 };
 
 type GraphEdge = {
@@ -41,15 +45,25 @@ const GraphView = ({ schema }: { schema: string }) => {
       edges: GraphEdge[] = []
     ) => {
       if (parentNodeId === "root") {
-        nodes.push({ id: `${parentNodeId}`, data: { label: "root" } });
+        nodes.push({
+          id: `${parentNodeId}`,
+          data: { label: JSON.stringify({ key: "root", value: {} }) },
+          type: "customNode",
+        });
       }
       for (const [key, value] of Object.entries(schema)) {
         const isExpandable = value !== null && typeof value === "object";
         const currentNodeId = `${parentNodeId}-${key}`;
 
+        const currentNodeData = {
+          key: key,
+          value: value,
+        };
+
         const newNode = {
           id: currentNodeId,
-          data: { label: `${key} -- ${value}` },
+          data: { label: JSON.stringify(currentNodeData) },
+          type: "customNode",
         };
 
         const newEdge = {
@@ -129,6 +143,7 @@ const GraphView = ({ schema }: { schema: string }) => {
         onNodesChange={onNodeChange}
         onEdgesChange={onEdgeChange}
         deleteKeyCode={null}
+        nodeTypes={nodeTypes}
         fitView
       >
         <Background />
