@@ -1,28 +1,19 @@
 {
   "$id": "https://example.com/job-posting.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "A representation of a job posting",
-  "type": "object",
-  "required": ["title", "company", "location", "description"],
   "properties": {
-    "title": {
-      "type": "string"
+    "firstName": {
+      "$ref": "#/$defs/nonEmptyString"
     },
-    "company": {
-      "type": "string"
-    },
-    "location": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
-    "employmentType": {
-      "type": "string"
+    "lastName": {
+      "const": null
     }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "temp": false
   }
 }
-
-
-
-

@@ -13,6 +13,7 @@ import {
 import dagre from "@dagrejs/dagre";
 import "@xyflow/react/dist/style.css";
 import CustomNode from "./CustomReactFlowNode";
+import type { AST } from "@hyperjump/json-schema/experimental";
 
 const nodeTypes = { customNode: CustomNode };
 
@@ -33,13 +34,13 @@ type GraphEdge = {
   target: string;
 };
 
-const GraphView = ({ schema }: { schema: string }) => {
+const GraphView = ({ schemaAST }: { schemaAST: AST | null }) => {
   const [nodes, setNodes, onNodeChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
 
   const generateNodesAndEdges = useCallback(
     (
-      schema: JSON,
+      schemaAST: JSON,
       parentNodeId: string,
       nodes: GraphNode[] = [],
       edges: GraphEdge[] = []
@@ -51,7 +52,7 @@ const GraphView = ({ schema }: { schema: string }) => {
           type: "customNode",
         });
       }
-      for (const [key, value] of Object.entries(schema)) {
+      for (const [key, value] of Object.entries(schemaAST)) {
         const isExpandable = value !== null && typeof value === "object";
         const currentNodeId = `${parentNodeId}-${key}`;
 
@@ -122,7 +123,7 @@ const GraphView = ({ schema }: { schema: string }) => {
 
   useEffect(() => {
     const { nodes: rawNodes, edges: rawEdges } = generateNodesAndEdges(
-      JSON.parse(schema),
+      schemaAST,
       "root"
     );
 
@@ -133,7 +134,13 @@ const GraphView = ({ schema }: { schema: string }) => {
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
-  }, [schema, generateNodesAndEdges, getLayoutedElements, setNodes, setEdges]);
+  }, [
+    schemaAST,
+    generateNodesAndEdges,
+    getLayoutedElements,
+    setNodes,
+    setEdges,
+  ]);
 
   return (
     <div style={{ width: "100%", height: "100%" }}>

@@ -10,10 +10,16 @@ import {
   registerSchema,
   unregisterSchema,
 } from "@hyperjump/json-schema/draft-2020-12";
+import {
+  getSchema,
+  compile,
+  type AST,
+} from "@hyperjump/json-schema/experimental";
 
 const MonacoEditor = () => {
   const { theme, isFullScreen, containerRef } = useContext(AppContext);
 
+  const [schemaAST, setSchemaAST] = useState<AST | null>(null);
   const [validationError, setValidationError] = useState("");
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [schemaValue, setSchemaValue] = useState(
@@ -32,15 +38,18 @@ const MonacoEditor = () => {
     async (jsonSchemaString: string | undefined) => {
       setValidationError("empty");
       if (!jsonSchemaString) return;
+      let schemaId;
 
       try {
         setValidationError("");
         const parsedSchema = JSON.parse(jsonSchemaString);
-        const schemaId = parsedSchema.$id;
-        unregisterSchema(schemaId);
+        schemaId = parsedSchema.$id;
 
         registerSchema(parsedSchema, schemaId);
+        const schemaDocument = await getSchema(schemaId);
+        const { ast } = await compile(schemaDocument);
         setSchemaValue(jsonSchemaString);
+        setSchemaAST(ast);
 
         window.sessionStorage.setItem("JSON Schema", jsonSchemaString);
       } catch (err: unknown) {
@@ -49,6 +58,8 @@ const MonacoEditor = () => {
         } else {
           setValidationError(String(err));
         }
+      } finally {
+        unregisterSchema(schemaId);
       }
     },
     []
@@ -62,7 +73,7 @@ const MonacoEditor = () => {
     setIsEditorReady(true);
     const prevSchema = window.sessionStorage.getItem("JSON Schema");
     if (prevSchema) {
-      setSchemaValue(prevSchema);
+      handleChange(prevSchema)
     }
   }
 
@@ -110,7 +121,7 @@ const MonacoEditor = () => {
           minSize={visualizePanelMinWidth}
           className="flex flex-col relative"
         >
-          {isEditorReady && <SchemaVisualization schema={schemaValue} />}
+          {isEditorReady && <SchemaVisualization schemaAST={schemaAST} />}
         </Panel>
       </PanelGroup>
     </div>
