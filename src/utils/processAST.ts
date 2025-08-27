@@ -290,17 +290,25 @@ const keywordHandlers = {
     "https://json-schema.org/keyword/writeOnly": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
         return { key: "writeOnly", value: keywordValue }
     },
-
+    
     // // Format Annotation
-    // "https://json-schema.org/keyword/format": (_keywordValue, instance) => instance,
+    "https://json-schema.org/keyword/format": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "format", value: keywordValue }
+    },
 
     // // Format Assertion
     // "https://json-schema.org/keyword/format-assertion": (_keywordValue, instance) => instance,
 
     // // Content
-    // "https://json-schema.org/keyword/contentEncoding": (_keywordValue, instance) => instance,
-    // "https://json-schema.org/keyword/contentMediaType": (_keywordValue, instance) => instance,
-    // "https://json-schema.org/keyword/contentSchema": (_keywordValue, instance) => instance,
+    "https://json-schema.org/keyword/contentEncoding": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "contentEncoding", value: keywordValue }
+    },
+    "https://json-schema.org/keyword/contentMediaType": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "contentMediaType", value: keywordValue }
+    },
+    "https://json-schema.org/keyword/contentSchema": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "contentSchema", value: keywordValue }
+    },
 
     // // Unknown keywords
     // "https://json-schema.org/keyword/unknown": (unknown, instance) => instance,
