@@ -95,30 +95,24 @@ const keywordHandlers = {
     },
 
     // // Applicator
-    // "https://json-schema.org/keyword/allOf": (allOf, instance, ast, dynamicAnchors, coveredPropertiesMap, coveredItemsMap) => {
-    //     for (const schema of allOf) {
-    //         instance = evaluateSchema(schema, instance, ast, dynamicAnchors, coveredPropertiesMap, coveredItemsMap);
-    //     }
-    //     return instance;
-    // },
-    // "https://json-schema.org/keyword/anyOf": (anyOf, instance, ast, dynamicAnchors, coveredPropertiesMap, coveredItemsMap) => {
-    //     for (const schema of anyOf) {
-    //         const instanceWithDefaults = evaluateSchema(schema, instance, ast, dynamicAnchors, coveredPropertiesMap, coveredItemsMap);
-    //         if (Validation.interpret(schema, Instance.fromJs(instanceWithDefaults), { ast, dynamicAnchors, errors: [], annotations: [], outputFormat: FLAG })) {
-    //             instance = instanceWithDefaults;
-    //         }
-    //     }
-    //     return instance;
-    // },
-    // "https://json-schema.org/keyword/oneOf": (oneOf, instance, ast, dynamicAnchors, coveredPropertiesMap, coveredItemsMap) => {
-    //     for (const schema of oneOf) {
-    //         const validationResult = instance ? Validation.interpret(schema, Instance.fromJs(instance), { ast, dynamicAnchors, errors: [], annotations: [], outputFormat: FLAG }) : false;
-    //         instance = evaluateSchema(schema, instance, ast, dynamicAnchors, coveredPropertiesMap, coveredItemsMap);
-
-    //         if (validationResult) return instance;
-    //     }
-    //     return instance;
-    // },
+    "https://json-schema.org/keyword/allOf": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        for (const item of keywordValue) {
+            processAST(ast, item, nodes, edges, parentId);
+        }
+        return { key: "allOf", value: keywordValue.length }
+    },
+    "https://json-schema.org/keyword/anyOf": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        for (const item of keywordValue) {
+            processAST(ast, item, nodes, edges, parentId);
+        }
+        return { key: "anyOf", value: keywordValue.length }
+    },
+    "https://json-schema.org/keyword/oneOf": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        for (const item of keywordValue) {
+            processAST(ast, item, nodes, edges, parentId);
+        }
+        return { key: "oneOf", value: keywordValue.length }
+    },
     // "https://json-schema.org/keyword/if": (ifSchema, instance, ast, dynamicAnchors, coveredPropertiesMap, coveredItemsMap) => {
     //     const instanceCopy = JSON.parse(JSON.stringify(instance));
     //     const instanceWithDefaults = evaluateSchema(ifSchema, instanceCopy, ast, dynamicAnchors, coveredPropertiesMap, coveredItemsMap);
@@ -265,7 +259,9 @@ const keywordHandlers = {
     // "https://json-schema.org/keyword/dependentRequired": (_keywordValue, instance) => instance,
     // "https://json-schema.org/keyword/maxProperties": (_keywordValue, instance) => instance,
     // "https://json-schema.org/keyword/minProperties": (_keywordValue, instance) => instance,
-    // "https://json-schema.org/keyword/required": (_keywordValue, instance) => instance,
+    "https://json-schema.org/keyword/required": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "requied", value: keywordValue }
+    },
     // "https://json-schema.org/keyword/maxItems": (_keywordValue, instance) => instance,
     // "https://json-schema.org/keyword/minItems": (_keywordValue, instance) => instance,
     // "https://json-schema.org/keyword/maxContains": (_keywordValue, instance) => instance,
@@ -273,15 +269,27 @@ const keywordHandlers = {
     // "https://json-schema.org/keyword/uniqueItems": (_keywordValue, instance) => instance,
 
     // // Meta Data
-    // "https://json-schema.org/keyword/default": (defaultValue, instance) => {
-    //     return instance === undefined ? defaultValue : instance;
-    // },
-    // "https://json-schema.org/keyword/title": (_keywordValue, instance) => instance,
-    // "https://json-schema.org/keyword/description": (_keywordValue, instance) => instance,
-    // "https://json-schema.org/keyword/deprecated": (_keywordValue, instance) => instance,
-    // "https://json-schema.org/keyword/examples": (_keywordValue, instance) => instance,
-    // "https://json-schema.org/keyword/readOnly": (_keywordValue, instance) => instance,
-    // "https://json-schema.org/keyword/writeOnly": (_keywordValue, instance) => instance,
+    "https://json-schema.org/keyword/default": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "default", value: keywordValue }
+    },
+    "https://json-schema.org/keyword/title": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "title", value: keywordValue }
+    },
+    "https://json-schema.org/keyword/description": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "description", value: keywordValue }
+    },
+    "https://json-schema.org/keyword/deprecated": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "deprecated", value: keywordValue }
+    },
+    "https://json-schema.org/keyword/examples": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "examples", value: keywordValue }
+    },
+    "https://json-schema.org/keyword/readOnly": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "readOnly", value: keywordValue }
+    },
+    "https://json-schema.org/keyword/writeOnly": (ast: AST, _keywordId, keywordValue, nodes, edges, parentId) => {
+        return { key: "writeOnly", value: keywordValue }
+    },
 
     // // Format Annotation
     // "https://json-schema.org/keyword/format": (_keywordValue, instance) => instance,
