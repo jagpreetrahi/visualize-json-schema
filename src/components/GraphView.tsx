@@ -13,7 +13,8 @@ import {
 import dagre from "@dagrejs/dagre";
 import "@xyflow/react/dist/style.css";
 import CustomNode from "./CustomReactFlowNode";
-import type { AST, CompiledSchema } from "@hyperjump/json-schema/experimental";
+import type { CompiledSchema } from "@hyperjump/json-schema/experimental";
+import { processAST, type GraphEdge, type GraphNode } from "../utils/processAST";
 
 const nodeTypes = { customNode: CustomNode };
 
@@ -21,18 +22,6 @@ const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
 const nodeWidth = 172;
 const nodeHeight = 36;
-
-type GraphNode = {
-  id: string;
-  data: { label: string };
-  type: string;
-};
-
-type GraphEdge = {
-  id: string;
-  source: string;
-  target: string;
-};
 
 const GraphView = ({
   compiledSchema,
@@ -44,45 +33,52 @@ const GraphView = ({
 
   const generateNodesAndEdges = useCallback(
     (
-      ast: JSON,
-      parentNodeId: string,
+      compiledSchema: CompiledSchema | null,
+      parentNodeId: string = "root",
       nodes: GraphNode[] = [],
       edges: GraphEdge[] = []
     ) => {
-      if (parentNodeId === "root") {
-        nodes.push({
-          id: `${parentNodeId}`,
-          data: { label: JSON.stringify({ key: "root", value: {} }) },
-          type: "customNode",
-        });
-      }
-      for (const [key, value] of Object.entries(ast)) {
-        const isExpandable = value !== null && typeof value === "object";
-        const currentNodeId = `${parentNodeId}-${key}`;
+      console.log(compiledSchema)
+      const { ast, schemaUri } = compiledSchema;
+      // console.log(ast)
+      const result = processAST(ast, schemaUri, nodes, edges, "");
 
-        const currentNodeData = {
-          key: key,
-          value: value,
-        };
+      // if (parentNodeId === "root") {
+      //   nodes.push({
+      //     id: `${parentNodeId}`,
+      //     data: { label: JSON.stringify({ key: "root", value: {} }) },
+      //     type: "customNode",
+      //   });
+      // }
+      // for (const [key, value] of Object.entries(ast)) {
+      //   if (key === "metaData" || key === "plugins") continue;
+      //   const isExpandable = value !== null && typeof value === "object";
+      //   const currentNodeId = `${parentNodeId}-${key}`;
 
-        const newNode = {
-          id: currentNodeId,
-          data: { label: JSON.stringify(currentNodeData) },
-          type: "customNode",
-        };
+      //   const currentNodeData = {
+      //     key: key,
+      //     value: value,
+      //   };
 
-        const newEdge = {
-          id: `${parentNodeId}-${currentNodeId}`,
-          source: parentNodeId,
-          target: currentNodeId,
-        };
+      //   const newNode = {
+      //     id: currentNodeId,
+      //     data: { label: JSON.stringify(currentNodeData) },
+      //     type: "customNode",
+      //   };
 
-        if (isExpandable) {
-          generateNodesAndEdges(value, currentNodeId, nodes, edges);
-        }
-        nodes.push(newNode);
-        edges.push(newEdge);
-      }
+      //   const newEdge = {
+      //     id: `${parentNodeId}-${currentNodeId}`,
+      //     source: parentNodeId,
+      //     target: currentNodeId,
+      //   };
+
+      //   if (isExpandable) {
+      //     generateNodesAndEdges(value, currentNodeId, nodes, edges);
+      //   }
+      //   nodes.push(newNode);
+      //   edges.push(newEdge);
+      // }
+      // return { nodes: result.nodes, edges: result.edges };
       return { nodes, edges };
     },
     []
@@ -126,11 +122,8 @@ const GraphView = ({
   );
 
   useEffect(() => {
-    const { ast, schemaUri } = compiledSchema;
-    const { nodes: rawNodes, edges: rawEdges } = generateNodesAndEdges(
-      ast,
-      "root"
-    );
+    const { nodes: rawNodes, edges: rawEdges } =
+      generateNodesAndEdges(compiledSchema);
 
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
       rawNodes,

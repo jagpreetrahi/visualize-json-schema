@@ -17,7 +17,8 @@ const shapeStyles = {
 };
 
 const CustomNode = ({ data }: { data: { label: string } }) => {
-  const parsedData = JSON.parse(data.label);
+  console.log(data);
+  // const parsedData = JSON.parse(data.label);
 
   const getType = useCallback((value: unknown) => {
     return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
@@ -25,7 +26,8 @@ const CustomNode = ({ data }: { data: { label: string } }) => {
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const nodeStyle = shapeStyles[getType(parsedData.value)];
+  // const nodeStyle = shapeStyles[getType(parsedData.value)];
+  const nodeStyle = shapeStyles[getType("string")];
 
   return (
     <div
@@ -33,7 +35,7 @@ const CustomNode = ({ data }: { data: { label: string } }) => {
       style={nodeStyle}
     >
       <Handle type="target" position={Position.Left} />
-      <div>{parsedData.key}</div>
+      <div><strong>type: </strong> {data.type}</div>
       <Handle type="source" position={Position.Right} />
     </div>
   );

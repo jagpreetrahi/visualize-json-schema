@@ -50,7 +50,8 @@ const MonacoEditor = () => {
         registerSchema(parsedSchema, schemaId);
         const schemaDocument = await getSchema(schemaId);
         setSchemaValue(jsonSchemaString);
-        setCompiledSchema(await compile(schemaDocument));
+        const compiledSchema = await compile(schemaDocument);
+        setCompiledSchema(compiledSchema);
 
         window.sessionStorage.setItem("JSON Schema", jsonSchemaString);
       } catch (err: unknown) {
@@ -69,7 +70,7 @@ const MonacoEditor = () => {
   {
     /*Assign the editor instance when the editor's mounted */
   }
-  function MonacoEditorDidMount(editor: monaco.editor.IStandaloneCodeEditor) {
+  const monacoEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
     setIsEditorReady(true);
     const prevSchema = window.sessionStorage.getItem("JSON Schema");
@@ -101,7 +102,7 @@ const MonacoEditor = () => {
             defaultLanguage="json"
             value={schemaValue}
             theme={theme === "light" ? "vs-light" : "vs-dark"}
-            onMount={MonacoEditorDidMount}
+            onMount={monacoEditorDidMount}
             options={{
               minimap: { enabled: false },
             }}
@@ -122,7 +123,7 @@ const MonacoEditor = () => {
           minSize={visualizePanelMinWidth}
           className="flex flex-col relative"
         >
-          {isEditorReady && (
+          {isEditorReady && compiledSchema && (
             <SchemaVisualization compiledSchema={compiledSchema} />
           )}
         </Panel>
