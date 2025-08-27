@@ -13,13 +13,15 @@ import {
 import {
   getSchema,
   compile,
-  type AST,
+  type CompiledSchema,
 } from "@hyperjump/json-schema/experimental";
 
 const MonacoEditor = () => {
   const { theme, isFullScreen, containerRef } = useContext(AppContext);
 
-  const [schemaAST, setSchemaAST] = useState<AST | null>(null);
+  const [compiledSchema, setCompiledSchema] = useState<CompiledSchema | null>(
+    null
+  );
   const [validationError, setValidationError] = useState("");
   const [isEditorReady, setIsEditorReady] = useState(false);
   const [schemaValue, setSchemaValue] = useState(
@@ -47,9 +49,8 @@ const MonacoEditor = () => {
 
         registerSchema(parsedSchema, schemaId);
         const schemaDocument = await getSchema(schemaId);
-        const { ast } = await compile(schemaDocument);
         setSchemaValue(jsonSchemaString);
-        setSchemaAST(ast);
+        setCompiledSchema(await compile(schemaDocument));
 
         window.sessionStorage.setItem("JSON Schema", jsonSchemaString);
       } catch (err: unknown) {
@@ -73,7 +74,7 @@ const MonacoEditor = () => {
     setIsEditorReady(true);
     const prevSchema = window.sessionStorage.getItem("JSON Schema");
     if (prevSchema) {
-      handleChange(prevSchema)
+      handleChange(prevSchema);
     }
   }
 
@@ -121,7 +122,9 @@ const MonacoEditor = () => {
           minSize={visualizePanelMinWidth}
           className="flex flex-col relative"
         >
-          {isEditorReady && <SchemaVisualization schemaAST={schemaAST} />}
+          {isEditorReady && (
+            <SchemaVisualization compiledSchema={compiledSchema} />
+          )}
         </Panel>
       </PanelGroup>
     </div>

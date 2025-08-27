@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { CgClose } from "react-icons/cg";
 import GraphView from "./GraphView";
-import { type AST } from "@hyperjump/json-schema/experimental";
+import { type CompiledSchema } from "@hyperjump/json-schema/experimental";
 
-const SchemaVisualization = ({ schemaAST }: { schemaAST: AST | null }) => {
+const SchemaVisualization = ({ compiledSchema }: { compiledSchema: CompiledSchema | null }) => {
   const views = ["Graph", "Tree"];
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorPopup, setShowErrorPopup] = useState(true);
@@ -43,7 +43,7 @@ const SchemaVisualization = ({ schemaAST }: { schemaAST: AST | null }) => {
   return (
     <>
       {currentView === "Graph" ? (
-        <GraphView schemaAST={schemaAST} />
+        <GraphView compiledSchema={compiledSchema} />
       ) : (
         <div className="flex justify-center mt-5">
           <div className="w-fit  tracking-wide text-red-600 px-4 py-2 border-2 rounded-md ">
