@@ -1,10 +1,13 @@
-import type { AST } from "@hyperjump/json-schema/experimental";
-
+import type { AST, Node } from "@hyperjump/json-schema/experimental";
 
 export type GraphNode = {
     id: string;
-    data: { label: string, type: string | undefined, nodeData: Record<string, string | object | unknown[]> };
     type: string;
+    data: {
+        label: string,
+        type: string,
+        nodeData: Record<string, unknown>
+    };
 };
 
 export type GraphEdge = {
@@ -13,25 +16,33 @@ export type GraphEdge = {
     target: string;
 };
 
-export const processAST = (
+type ASTContext = [
     ast: AST,
     schemaUri: string,
     nodes: GraphNode[],
     edges: GraphEdge[],
     parentId: string
-) => {
-    const schemaNodes = ast[schemaUri];
-    const nodeData: Record<string, string | object | unknown[]> = {};
-    let schemaType: string = "";
+];
+
+type ProcessAST = (...args: ASTContext) => void;
+type KeywordHandler = (...args: ASTContext) => { key: string, value: unknown };
+type GetKeywordHandler = (handlerName: string) => KeywordHandler;
+type KeywordHandlerMap = Record<string, KeywordHandler>;
+type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
+
+export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId) => {
+    const schemaNodes: boolean | Node<unknown>[] = ast[schemaUri];
+    const nodeData: Record<string, unknown> = {};
+    let schemaType: string | undefined;
 
     if (typeof schemaNodes !== 'boolean') {
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             if (keywordHandlerName === "https://json-schema.org/keyword/type") {
-                schemaType = keywordValue;
+                schemaType = keywordValue as string;
                 continue;
             }
             const handler = getKeywordHandler(keywordHandlerName);
-            const { key, value } = handler(ast, keywordValue, nodes, edges, schemaUri);
+            const { key, value } = handler(ast, keywordValue as string, nodes, edges, schemaUri);
             nodeData[key] = value;
         }
     }
@@ -52,36 +63,30 @@ export const processAST = (
     // return { nodes, edges };
 };
 
-const getKeywordHandler = (handlerName: string): () => void => {
-    if (!(handlerName in keywordHandlers)) {
+const getKeywordHandler: GetKeywordHandler = (handlerName) => {
+    if (!(handlerName in keywordHandlerMap)) {
         throw Error(`No handler found for Keyword: ${handlerName}`);
     }
-    return keywordHandlers[handlerName];
+    return keywordHandlerMap[handlerName];
 }
 
-const createBasicKeywordHandler = (key: string) => {
-    return (
-        _ast,
-        keywordValue,
-        _nodes,
-        _edges,
-        _parentId
-    ) => {
+const createBasicKeywordHandler: CreateBasicKeywordHandler = (key) => {
+    return (_ast, keywordValue, _nodes, _edges, _parentId) => {
         return { key, value: keywordValue }
     }
 }
 
-const keywordHandlers = {
+const keywordHandlerMap: KeywordHandlerMap = {
 
     // Core
     // "https://json-schema.org/keyword/dynamicRef": createBasicKeywordHandler("$dynamicRef"),
     // "https://json-schema.org/keyword/draft-2020-12/dynamicRef": createBasicKeywordHandler("$dynamicRef"),
-    "https://json-schema.org/keyword/ref": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/ref": (ast, keywordValue, nodes, edges, parentId) => {
         processAST(ast, keywordValue, nodes, edges, parentId);
         return { key: "$ref", value: [keywordValue] }
     },
     "https://json-schema.org/keyword/comment": createBasicKeywordHandler("$comment"),
-    "https://json-schema.org/keyword/definitions": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/definitions": (ast, keywordValue, nodes, edges, parentId) => {
         for (const item of keywordValue) {
             processAST(ast, item, nodes, edges, parentId);
         }
@@ -89,37 +94,37 @@ const keywordHandlers = {
     },
 
     // Applicator
-    "https://json-schema.org/keyword/allOf": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/allOf": (ast, keywordValue, nodes, edges, parentId) => {
         for (const item of keywordValue) {
             processAST(ast, item, nodes, edges, parentId);
         }
         return { key: "allOf", value: keywordValue.length }
     },
-    "https://json-schema.org/keyword/anyOf": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/anyOf": (ast, keywordValue, nodes, edges, parentId) => {
         for (const item of keywordValue) {
             processAST(ast, item, nodes, edges, parentId);
         }
         return { key: "anyOf", value: keywordValue.length }
     },
-    "https://json-schema.org/keyword/oneOf": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/oneOf": (ast, keywordValue, nodes, edges, parentId) => {
         for (const item of keywordValue) {
             processAST(ast, item, nodes, edges, parentId);
         }
         return { key: "oneOf", value: keywordValue.length }
     },
-    "https://json-schema.org/keyword/if": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/if": (ast, keywordValue, nodes, edges, parentId) => {
         processAST(ast, keywordValue, nodes, edges, parentId);
         return { key: "if", value: keywordValue }
     },
-    "https://json-schema.org/keyword/then": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/then": (ast, keywordValue, nodes, edges, parentId) => {
         processAST(ast, keywordValue[1], nodes, edges, parentId);
         return { key: "then", value: keywordValue[1] }
     },
-    "https://json-schema.org/keyword/else": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/else": (ast, keywordValue, nodes, edges, parentId) => {
         processAST(ast, keywordValue[1], nodes, edges, parentId);
         return { key: "else", value: keywordValue[1] }
     },
-    "https://json-schema.org/keyword/properties": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/properties": (ast, keywordValue, nodes, edges, parentId) => {
         const propertyNames = [];
         for (const [key, value] of Object.entries(keywordValue)) {
             propertyNames.push(key);
@@ -127,36 +132,38 @@ const keywordHandlers = {
         }
         return { key: "properties", value: propertyNames }
     },
-    "https://json-schema.org/keyword/additionalProperties": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/additionalProperties": (ast, keywordValue, nodes, edges, parentId) => {
         processAST(ast, keywordValue[1], nodes, edges, parentId);
         return { key: "additionalProperties", value: keywordValue[1] }
     },
-    "https://json-schema.org/keyword/patternProperties": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/patternProperties": (ast, keywordValue, nodes, edges, parentId) => {
         for (const item of keywordValue) {
             processAST(ast, item[1], nodes, edges, parentId);
         }
         return { key: "patternProperties", value: keywordValue.length }
     },
     // "https://json-schema.org/keyword/dependentSchemas": createBasicKeywordHandler("dependentSchemas"),
-    "https://json-schema.org/keyword/contains": (ast: AST, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/contains": (ast, keywordValue, nodes, edges, parentId) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         processAST(ast, keywordValue["contains"], nodes, edges, parentId);
         return { key: "contains", value: keywordValue }
     },
-    "https://json-schema.org/keyword/items": (ast: AST, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/items": (ast, keywordValue, nodes, edges, parentId) => {
         processAST(ast, keywordValue[1], nodes, edges, parentId);
         return { key: "items", value: keywordValue }
     },
-    "https://json-schema.org/keyword/prefixItems": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/prefixItems": (ast, keywordValue, nodes, edges, parentId) => {
         for (const item of keywordValue) {
             processAST(ast, item, nodes, edges, parentId);
         }
         return { key: "prefixItems", value: keywordValue.length }
     },
-    "https://json-schema.org/keyword/not": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/not": (ast, keywordValue, nodes, edges, parentId) => {
         processAST(ast, keywordValue, nodes, edges, parentId);
         return { key: "not", value: keywordValue }
     },
-    "https://json-schema.org/keyword/propertyNames": (ast: AST, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/propertyNames": (ast, keywordValue, nodes, edges, parentId) => {
         processAST(ast, keywordValue, nodes, edges, parentId);
         return { key: "propertyNames", value: keywordValue }
     },
