@@ -5,7 +5,7 @@ export type GraphNode = {
     type: string;
     data: {
         label: string,
-        type: string,
+        type?: string,
         nodeData: Record<string, unknown>,
         isLeafNode?: boolean
     };
@@ -34,7 +34,7 @@ type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
 export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId) => {
     const schemaNodes: boolean | Node<unknown>[] = ast[schemaUri];
     const nodeData: Record<string, unknown> = {};
-    let schemaType: string | undefined;
+    let schemaType: string  | undefined;
     let isLeafNode: boolean | undefined = false;
 
     if (typeof schemaNodes === "boolean") {
@@ -44,6 +44,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId) =
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             const handler = getKeywordHandler(keywordHandlerName);
             const { key, value, LeafNode } = handler(ast, keywordValue as string, nodes, edges, schemaUri);
+            if (key === "type") schemaType = value as string;
             nodeData[key] = value;
             isLeafNode = LeafNode;
         }
@@ -51,7 +52,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId) =
     const newNode: GraphNode = {
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType ? schemaType : "N/A", nodeData: nodeData, isLeafNode }
+        data: { label: "", type: schemaType, nodeData: nodeData, isLeafNode }
     }
     if (parentId) {
         const newEdge: GraphEdge = {
