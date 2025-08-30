@@ -6,7 +6,8 @@ export type GraphNode = {
     data: {
         label: string,
         type: string,
-        nodeData: Record<string, unknown>
+        nodeData: Record<string, unknown>,
+        isLeafNode?: boolean
     };
 };
 
@@ -25,7 +26,7 @@ type ASTContext = [
 ];
 
 type ProcessAST = (...args: ASTContext) => void;
-type KeywordHandler = (...args: ASTContext) => { key: string, value: unknown };
+type KeywordHandler = (...args: ASTContext) => { key: string, value: unknown, LeafNode?: boolean };
 type GetKeywordHandler = (handlerName: string) => KeywordHandler;
 type KeywordHandlerMap = Record<string, KeywordHandler>;
 type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
@@ -34,22 +35,24 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId) =
     const schemaNodes: boolean | Node<unknown>[] = ast[schemaUri];
     const nodeData: Record<string, unknown> = {};
     let schemaType: string | undefined;
+    let isLeafNode: boolean | undefined = false;
 
-    if (typeof schemaNodes !== 'boolean') {
+    if (typeof schemaNodes === "boolean") {
+        nodeData["booleanSchema"] = schemaNodes;
+        isLeafNode = true;
+    } else {
+        console.log(parentId+"-handle")
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
-            if (keywordHandlerName === "https://json-schema.org/keyword/type") {
-                schemaType = keywordValue as string;
-                continue;
-            }
             const handler = getKeywordHandler(keywordHandlerName);
-            const { key, value } = handler(ast, keywordValue as string, nodes, edges, schemaUri);
+            const { key, value, LeafNode } = handler(ast, keywordValue as string, nodes, edges, schemaUri);
             nodeData[key] = value;
+            isLeafNode = LeafNode;
         }
     }
     const newNode: GraphNode = {
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType ? schemaType : "N/A", nodeData: nodeData }
+        data: { label: "", type: schemaType ? schemaType : "N/A", nodeData: nodeData, isLeafNode }
     }
     if (parentId) {
         const newEdge: GraphEdge = {
@@ -72,7 +75,7 @@ const getKeywordHandler: GetKeywordHandler = (handlerName) => {
 
 const createBasicKeywordHandler: CreateBasicKeywordHandler = (key) => {
     return (_ast, keywordValue, _nodes, _edges, _parentId) => {
-        return { key, value: keywordValue }
+        return { key, value: keywordValue, LeafNode: true }
     }
 }
 

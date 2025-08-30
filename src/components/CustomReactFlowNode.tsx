@@ -16,7 +16,16 @@ const shapeStyles = {
   },
 };
 
-const CustomNode = ({ data }: { data: { label: string } }) => {
+const CustomNode = ({
+  data,
+}: {
+  data: {
+    label: string;
+    type: string;
+    nodeData: Record<string, unknown>;
+    isLeafNode?: boolean;
+  };
+}) => {
   console.log(data);
   // const parsedData = JSON.parse(data.label);
 
@@ -31,12 +40,23 @@ const CustomNode = ({ data }: { data: { label: string } }) => {
 
   return (
     <div
-      className="flex justify-center items-center w-[120px] h-[50px]"
+      className="flex justify-center items-center p-4 w-[200px] h-[80px]"
       style={nodeStyle}
     >
+      {!data.isLeafNode && <Handle type="source" position={Position.Right} />}
       <Handle type="target" position={Position.Left} />
-      <div><strong>type: </strong> {data.type}</div>
-      <Handle type="source" position={Position.Right} />
+      <div className="text-xs overflow-x-auto w-full max-h-[60px]">
+        <table className="table-fixed w-full">
+          <tbody>
+            {Object.entries(data.nodeData).map(([key, value]) => (
+              <tr key={key}>
+                <td className="pr-2 font-medium break-words">{key}</td>
+                <td className="break-words">{String(value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
