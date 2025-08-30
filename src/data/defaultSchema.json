@@ -1,19 +1,43 @@
 {
-  "$id": "https://example.com/job-posting.schema.json",
+  "$id": "https://example.com",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
   "properties": {
     "firstName": {
       "$ref": "#/$defs/nonEmptyString"
     },
     "lastName": {
       "const": null
+    },
+    "hobby": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string"
+        },
+        true,
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "phone": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
     }
   },
   "$defs": {
+    "temp": false,
     "nonEmptyString": {
-      "type": "string",
-      "minLength": 1
-    },
-    "temp": false
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "boolean"
+        },
+        "b": true
+      }
+    }
   }
 }
