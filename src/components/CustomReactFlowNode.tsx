@@ -7,13 +7,13 @@ const nodeStyles: {
 } = {
   objectSchema: {
     string: {
-      background: "#D1C4E9", // Soft lavender
+      background: "#FEC8D8", // Soft pink
     },
     number: {
-      background: "#F5A5A0", // Muted coral
+      background: "#A0E7A0", // Soft Mint Green
     },
     boolean: {
-      background: "#FEC8D8", // Soft pink
+      background: "#CCCCFF", // Soft blue
     },
     array: {
       background: "#A0E7E5", // Muted teal
@@ -22,24 +22,28 @@ const nodeStyles: {
       background: "#F8D7A0", // Warm beige
     },
     null: {
-      background: "#D3D3D3", // Light gray
+      background: "#F5A5A0", // Muted coral
     },
     others: {
-      background: "#CCCCFF", // Soft blue
+      background: "#D3D3D3", // Light gray
       border: "2px dashed #888",
     },
   },
   booleanSchema: {
     true: {
       background: "#6dbf81",
+      height: "50px",
+      width: "100px",
       border: "2px solid gray",
-      borderRadius: "25px",
+      borderRadius: "50%",
       fontWeight: "bold",
     },
     false: {
       background: "#e36d7f",
+      height: "50px",
+      width: "100px",
       border: "2px solid gray",
-      borderRadius: "25px",
+      borderRadius: "50%",
       fontWeight: "bold",
     },
   },

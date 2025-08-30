@@ -22,7 +22,6 @@ type ValidationState =
   | { status: "error"; message: string };
 
 const MonacoEditor = () => {
-  console.count("aaa");
   const { theme, isFullScreen, containerRef } = useContext(AppContext);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const [validationState, setValidationState] = useState<ValidationState>({
