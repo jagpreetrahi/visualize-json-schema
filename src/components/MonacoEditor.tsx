@@ -1,10 +1,4 @@
-import Editor from "@monaco-editor/react";
-import schema from "../data/defaultSchema.json";
-import { useCallback, useContext, useState, useRef } from "react";
-import * as monaco from "monaco-editor";
-import SchemaVisualization from "./SchemaVisualization";
-import FullscreenToggleButton from "./FullscreenToggleButton";
-import { AppContext } from "../contexts/AppContext";
+import { useCallback, useContext, useState, useRef, useEffect } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import {
   registerSchema,
@@ -15,117 +9,110 @@ import {
   compile,
   type CompiledSchema,
 } from "@hyperjump/json-schema/experimental";
+import * as monaco from "monaco-editor";
+import Editor from "@monaco-editor/react";
+import schema from "../data/defaultSchema.json";
+import { AppContext } from "../contexts/AppContext";
+import SchemaVisualization from "./SchemaVisualization";
+import FullscreenToggleButton from "./FullscreenToggleButton";
+
+type ValidationState =
+  | { status: "idle" }
+  | { status: "valid" }
+  | { status: "error"; message: string };
 
 const MonacoEditor = () => {
+  console.count("aaa");
   const { theme, isFullScreen, containerRef } = useContext(AppContext);
-
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const [validationState, setValidationState] = useState<ValidationState>({
+    status: "idle",
+  });
   const [compiledSchema, setCompiledSchema] = useState<CompiledSchema | null>(
     null
   );
-  const [validationError, setValidationError] = useState("");
-  const [isEditorReady, setIsEditorReady] = useState(false);
-  const [schemaValue, setSchemaValue] = useState(
-    JSON.stringify(schema, null, 2)
+  const [schemaValue, setSchemaValue] = useState<string | undefined>(
+    window.sessionStorage.getItem("JSON Schema") ??
+      JSON.stringify(schema, null, 2)
   );
 
-  const editorPanelMinWidth: number = 25;
-  const editorPanelDefaultWidth: number = 35;
-  const visualizePanelMinWidth: number = 60;
+  const compileSchema = useCallback(async (value: string | undefined) => {
+    if (!value) return;
 
-  const editorHeight: string = "90%";
-  const editorWidth: string = "100%";
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+    let schemaId: string;
+    try {
+      setValidationState({ status: "idle" });
+      const parsedSchema = JSON.parse(value);
+      schemaId = parsedSchema.$id;
 
-  const handleChange = useCallback(
-    async (jsonSchemaString: string | undefined) => {
-      setValidationError("empty");
-      if (!jsonSchemaString) return;
-      let schemaId;
+      unregisterSchema(schemaId);
+      registerSchema(parsedSchema, schemaId);
 
-      try {
-        setValidationError("");
-        const parsedSchema = JSON.parse(jsonSchemaString);
-        schemaId = parsedSchema.$id;
+      const schemaDocument = await getSchema(schemaId);
+      const compiledSchema = await compile(schemaDocument);
 
-        registerSchema(parsedSchema, schemaId);
-        const schemaDocument = await getSchema(schemaId);
-        setSchemaValue(jsonSchemaString);
-        const compiledSchema = await compile(schemaDocument);
-        setCompiledSchema(compiledSchema);
-
-        window.sessionStorage.setItem("JSON Schema", jsonSchemaString);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setValidationError(err.message);
-        } else {
-          setValidationError(String(err));
-        }
-      } finally {
-        unregisterSchema(schemaId);
+      setCompiledSchema(compiledSchema);
+      setValidationState({ status: "valid" });
+      if (value !== schemaValue) {
+        setSchemaValue(value);
       }
+      window.sessionStorage.setItem("JSON Schema", value);
+    } catch (err) {
+      setCompiledSchema(null);
+      setValidationState({
+        status: "error",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    compileSchema(schemaValue);
+  }, [compileSchema, schemaValue]);
+
+  const handleEditorMount = useCallback(
+    (editor: monaco.editor.IStandaloneCodeEditor) => {
+      editorRef.current = editor;
     },
     []
   );
 
-  {
-    /*Assign the editor instance when the editor's mounted */
-  }
-  const monacoEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
-    editorRef.current = editor;
-    setIsEditorReady(true);
-    const prevSchema = window.sessionStorage.getItem("JSON Schema");
-    if (prevSchema) {
-      handleChange(prevSchema);
-    }
-  }
-
   return (
     <div ref={containerRef} className="h-[85vh] flex flex-col">
-      {isFullScreen ? (
+      {isFullScreen && (
         <div className="w-full px-1 bg-[var(--view-bg-color)] justify-items-end">
           <div className="text-[var(--view-text-color)]">
             <FullscreenToggleButton />
           </div>
         </div>
-      ) : (
-        <>{/* <ToolSummary /> */}</>
       )}
       <PanelGroup direction="horizontal">
-        <Panel
-          className="flex flex-col"
-          minSize={editorPanelMinWidth}
-          defaultSize={editorPanelDefaultWidth}
-        >
+        <Panel className="flex flex-col" minSize={10} defaultSize={35}>
           <Editor
-            height={editorHeight}
-            width={editorWidth}
+            height="90%"
+            width="100%"
             defaultLanguage="json"
             value={schemaValue}
             theme={theme === "light" ? "vs-light" : "vs-dark"}
-            onMount={monacoEditorDidMount}
-            options={{
-              minimap: { enabled: false },
-            }}
-            onChange={handleChange}
+            onMount={handleEditorMount}
+            options={{ minimap: { enabled: false } }}
+            onChange={compileSchema}
           />
-          <div className="flex-1 p-2 bg-[var(--validation-bg-color)] text-sm overflow-y-auto">
-            {validationError === "empty" ? null : validationError ? (
-              <div className="text-red-400">{validationError}</div>
-            ) : (
-              <div className="text-green-400 font-semibold">
-                ✓ Valid JSON Schema
-              </div>
-            )}
-          </div>
+          {validationState.status !== "idle" && (
+            <div className="flex-1 p-2 bg-[var(--validation-bg-color)] text-sm overflow-y-auto">
+              {validationState.status === "error" ? (
+                <div className="text-red-400">{validationState.message}</div>
+              ) : (
+                <div className="text-green-400 font-semibold">
+                  ✓ Valid JSON Schema
+                </div>
+              )}
+            </div>
+          )}
         </Panel>
         <PanelResizeHandle className="panel-resize-handle" />
-        <Panel
-          minSize={visualizePanelMinWidth}
-          className="flex flex-col relative"
-        >
-          {isEditorReady && compiledSchema && (
-            <SchemaVisualization compiledSchema={compiledSchema} />
-          )}
+        <Panel minSize={60} className="flex flex-col relative">
+          <SchemaVisualization compiledSchema={compiledSchema} />
         </Panel>
       </PanelGroup>
     </div>

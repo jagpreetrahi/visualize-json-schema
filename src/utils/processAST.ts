@@ -41,7 +41,6 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId) =
         nodeData["booleanSchema"] = schemaNodes;
         isLeafNode = true;
     } else {
-        console.log(parentId+"-handle")
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             const handler = getKeywordHandler(keywordHandlerName);
             const { key, value, LeafNode } = handler(ast, keywordValue as string, nodes, edges, schemaUri);

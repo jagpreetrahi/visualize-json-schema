@@ -27,7 +27,6 @@ const CustomNode = ({
   };
 }) => {
   console.log(data);
-  // const parsedData = JSON.parse(data.label);
 
   const getType = useCallback((value: unknown) => {
     return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
