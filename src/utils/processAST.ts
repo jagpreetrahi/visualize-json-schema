@@ -1,4 +1,4 @@
-import type { AST, Node } from "@hyperjump/json-schema/experimental";
+import type { AST } from "@hyperjump/json-schema/experimental";
 import { toAbsoluteIri } from "@hyperjump/uri";
 
 export type GraphNode = {
@@ -23,7 +23,8 @@ type ASTContext = [
     schemaUri: string,
     nodes: GraphNode[],
     edges: GraphEdge[],
-    parentId: string
+    parentId: string,
+    renderedNodes: string[]
 ];
 
 type ProcessAST = (...args: ASTContext) => void;
@@ -32,39 +33,56 @@ type GetKeywordHandler = (handlerName: string) => KeywordHandler;
 type KeywordHandlerMap = Record<string, KeywordHandler>;
 type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
 
-export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId) => {
-    const schemaNodes: boolean | Node<unknown>[] = ast[schemaUri];
+export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, renderedNodes = []) => {
+    if (renderedNodes.includes(schemaUri)) {
+        if (parentId) {
+            edges.push({
+                id: `${parentId}-${schemaUri}`,
+                source: parentId,
+                target: schemaUri
+            });
+        }
+        return;
+    }
+
+    const schemaNodes = ast[schemaUri];
     const nodeData: Record<string, unknown> = {};
-    let schemaType: string  | undefined;
+    let schemaType: string | undefined;
     let isLeafNode: boolean | undefined = false;
 
+    renderedNodes.push(schemaUri);
+
     if (typeof schemaNodes === "boolean") {
+        console.log(222);
         nodeData["booleanSchema"] = schemaNodes;
         isLeafNode = true;
     } else {
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             const handler = getKeywordHandler(toAbsoluteIri(keywordHandlerName));
-            const { key, value, LeafNode } = handler(ast, keywordValue as string, nodes, edges, schemaUri);
-            if (key === "type") schemaType = value as string;
-            nodeData[key] = value;
+            const { key, value, LeafNode } = handler(ast, keywordValue as string, nodes, edges, schemaUri, renderedNodes);
+            if (key) {
+                nodeData[key] = value;
+                if (key === "type") schemaType = value as string;
+            }
             isLeafNode = LeafNode;
         }
     }
-    const newNode: GraphNode = {
+
+    nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType, nodeData: nodeData, isLeafNode }
-    }
+        data: { label: "", type: schemaType, nodeData, isLeafNode }
+    });
+
     if (parentId) {
-        const newEdge: GraphEdge = {
+        edges.push({
             id: `${parentId}-${schemaUri}`,
             source: parentId,
             target: schemaUri
-        }
-        edges.push(newEdge)
+        });
     }
-    nodes.push(newNode)
     // return { nodes, edges };
+
 };
 
 const getKeywordHandler: GetKeywordHandler = (handlerName) => {
@@ -85,90 +103,90 @@ const keywordHandlerMap: KeywordHandlerMap = {
     // Core
     // "https://json-schema.org/keyword/dynamicRef": createBasicKeywordHandler("$dynamicRef"),
     // "https://json-schema.org/keyword/draft-2020-12/dynamicRef": createBasicKeywordHandler("$dynamicRef"),
-    "https://json-schema.org/keyword/ref": (ast, keywordValue, nodes, edges, parentId) => {
-        processAST(ast, keywordValue, nodes, edges, parentId);
+    "https://json-schema.org/keyword/ref": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue, nodes, edges, parentId, renderedNodes);
         return { key: "$ref", value: [keywordValue] }
     },
     "https://json-schema.org/keyword/comment": createBasicKeywordHandler("$comment"),
-    "https://json-schema.org/keyword/definitions": (ast, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/definitions": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId);
+            processAST(ast, item, nodes, edges, parentId, renderedNodes);
         }
         return { key: "$defs", value: keywordValue.length }
     },
 
     // Applicator
-    "https://json-schema.org/keyword/allOf": (ast, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/allOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId);
+            processAST(ast, item, nodes, edges, parentId, renderedNodes);
         }
         return { key: "allOf", value: keywordValue.length }
     },
-    "https://json-schema.org/keyword/anyOf": (ast, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/anyOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId);
+            processAST(ast, item, nodes, edges, parentId, renderedNodes);
         }
         return { key: "anyOf", value: keywordValue.length }
     },
-    "https://json-schema.org/keyword/oneOf": (ast, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/oneOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId);
+            processAST(ast, item, nodes, edges, parentId, renderedNodes);
         }
         return { key: "oneOf", value: keywordValue.length }
     },
-    "https://json-schema.org/keyword/if": (ast, keywordValue, nodes, edges, parentId) => {
-        processAST(ast, keywordValue, nodes, edges, parentId);
+    "https://json-schema.org/keyword/if": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue, nodes, edges, parentId, renderedNodes);
         return { key: "if", value: keywordValue }
     },
-    "https://json-schema.org/keyword/then": (ast, keywordValue, nodes, edges, parentId) => {
-        processAST(ast, keywordValue[1], nodes, edges, parentId);
+    "https://json-schema.org/keyword/then": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue[1], nodes, edges, parentId, renderedNodes);
         return { key: "then", value: keywordValue[1] }
     },
-    "https://json-schema.org/keyword/else": (ast, keywordValue, nodes, edges, parentId) => {
-        processAST(ast, keywordValue[1], nodes, edges, parentId);
+    "https://json-schema.org/keyword/else": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue[1], nodes, edges, parentId, renderedNodes);
         return { key: "else", value: keywordValue[1] }
     },
-    "https://json-schema.org/keyword/properties": (ast, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/properties": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         const propertyNames = [];
         for (const [key, value] of Object.entries(keywordValue)) {
             propertyNames.push(key);
-            processAST(ast, value as string, nodes, edges, parentId);
+            processAST(ast, value as string, nodes, edges, parentId, renderedNodes);
         }
         return { key: "properties", value: propertyNames }
     },
-    "https://json-schema.org/keyword/additionalProperties": (ast, keywordValue, nodes, edges, parentId) => {
-        processAST(ast, keywordValue[1], nodes, edges, parentId);
+    "https://json-schema.org/keyword/additionalProperties": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue[1], nodes, edges, parentId, renderedNodes);
         return { key: "additionalProperties", value: keywordValue[1] }
     },
-    "https://json-schema.org/keyword/patternProperties": (ast, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/patternProperties": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const item of keywordValue) {
-            processAST(ast, item[1], nodes, edges, parentId);
+            processAST(ast, item[1], nodes, edges, parentId, renderedNodes);
         }
         return { key: "patternProperties", value: keywordValue.length }
     },
     // "https://json-schema.org/keyword/dependentSchemas": createBasicKeywordHandler("dependentSchemas"),
-    "https://json-schema.org/keyword/contains": (ast, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/contains": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
-        processAST(ast, keywordValue["contains"], nodes, edges, parentId);
+        processAST(ast, keywordValue["contains"], nodes, edges, parentId, renderedNodes);
         return { key: "contains", value: keywordValue }
     },
-    "https://json-schema.org/keyword/items": (ast, keywordValue, nodes, edges, parentId) => {
-        processAST(ast, keywordValue[1], nodes, edges, parentId);
+    "https://json-schema.org/keyword/items": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue[1], nodes, edges, parentId, renderedNodes);
         return { key: "items", value: keywordValue }
     },
-    "https://json-schema.org/keyword/prefixItems": (ast, keywordValue, nodes, edges, parentId) => {
+    "https://json-schema.org/keyword/prefixItems": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId);
+            processAST(ast, item, nodes, edges, parentId, renderedNodes);
         }
         return { key: "prefixItems", value: keywordValue.length }
     },
-    "https://json-schema.org/keyword/not": (ast, keywordValue, nodes, edges, parentId) => {
-        processAST(ast, keywordValue, nodes, edges, parentId);
+    "https://json-schema.org/keyword/not": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue, nodes, edges, parentId, renderedNodes);
         return { key: "not", value: keywordValue }
     },
-    "https://json-schema.org/keyword/propertyNames": (ast, keywordValue, nodes, edges, parentId) => {
-        processAST(ast, keywordValue, nodes, edges, parentId);
+    "https://json-schema.org/keyword/propertyNames": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue, nodes, edges, parentId, renderedNodes);
         return { key: "propertyNames", value: keywordValue }
     },
 
