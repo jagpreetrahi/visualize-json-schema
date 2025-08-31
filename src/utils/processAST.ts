@@ -1,4 +1,5 @@
 import type { AST, Node } from "@hyperjump/json-schema/experimental";
+import { toAbsoluteIri } from "@hyperjump/uri";
 
 export type GraphNode = {
     id: string;
@@ -42,7 +43,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId) =
         isLeafNode = true;
     } else {
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
-            const handler = getKeywordHandler(keywordHandlerName);
+            const handler = getKeywordHandler(toAbsoluteIri(keywordHandlerName));
             const { key, value, LeafNode } = handler(ast, keywordValue as string, nodes, edges, schemaUri);
             if (key === "type") schemaType = value as string;
             nodeData[key] = value;
@@ -214,7 +215,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
     "https://json-schema.org/keyword/contentSchema": createBasicKeywordHandler("contentSchema"),
 
     // Unknown keywords
-    // "https://json-schema.org/keyword/unknown": createBasicKeywordHandler("unknown"),
+    "https://json-schema.org/keyword/unknown": createBasicKeywordHandler("unknown"),
 
     // Unevaluated
     // "https://json-schema.org/keyword/unevaluatedProperties": createBasicKeywordHandler("unevaluatedProperties"),
