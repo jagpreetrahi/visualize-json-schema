@@ -24,11 +24,11 @@ type ASTContext = [
     nodes: GraphNode[],
     edges: GraphEdge[],
     parentId: string,
-    renderedNodes: string[]
+    renderedNodes?: string[]
 ];
 
 type ProcessAST = (...args: ASTContext) => void;
-type KeywordHandler = (...args: ASTContext) => { key: string, value: unknown, LeafNode?: boolean };
+type KeywordHandler = (...args: ASTContext) => { key?: string, value?: unknown, LeafNode?: boolean };
 type GetKeywordHandler = (handlerName: string) => KeywordHandler;
 type KeywordHandlerMap = Record<string, KeywordHandler>;
 type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
@@ -109,6 +109,20 @@ const keywordHandlerMap: KeywordHandlerMap = {
     },
     "https://json-schema.org/keyword/comment": createBasicKeywordHandler("$comment"),
     "https://json-schema.org/keyword/definitions": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        ast["https://json-schema.org/keyword/$defs"] = [
+            [
+                "https://json-schema.org/keyword/$defs",
+                `${parentId}/$defs`,
+                keywordValue
+            ]
+        ];
+        // for (const item of keywordValue) {
+        processAST(ast, "https://json-schema.org/keyword/$defs", nodes, edges, parentId, renderedNodes);
+        // }
+        // return { key: "$defs", value: keywordValue.length }
+        return {}
+    },
+    "https://json-schema.org/keyword/$defs": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const item of keywordValue) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes);
         }

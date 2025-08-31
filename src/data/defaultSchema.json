@@ -3,41 +3,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "firstName": {
-      "$ref": "#/$defs/nonEmptyString"
+    "foo": {
+      "$ref": "#/$defs/foo"
     },
-    "lastName": {
-      "const": null
-    },
-    "hobby": {
+    "bar": { "const": null },
+    "baz": {
       "type": "array",
       "prefixItems": [
-        {
-          "type": "string"
-        },
+        { "type": "string" },
         true,
-        {
-          "type": "number"
-        }
+        { "$ref": "#/$defs/bar" }
       ]
-    },
-    "phone": {
-      "type": "array",
-      "items": {
-        "type": "number"
-      }
     }
   },
   "$defs": {
-    "temp": false,
-    "nonEmptyString": {
+    "bool": false,
+    "foo": {
       "type": "object",
       "properties": {
-        "a": {
-          "type": "boolean"
-        },
-        "b": true
+        "a": { "type": "boolean" }
       }
-    }
+    },
+    "bar": { "type": "number" }
   }
 }
