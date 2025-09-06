@@ -75,22 +75,45 @@ const CustomNode = ({
 
   return (
     <div
-      className="flex items-center px-3 py-2 w-[200px] min-h-[50px] rounded-lg shadow-sm"
+      className="flex items-center px-3 py-2 w-[200px] h-[80px] rounded-lg shadow-sm"
       style={nodeStyle}
     >
       {!data.isLeafNode && <Handle type="source" position={Position.Right} />}
       <Handle type="target" position={Position.Left} />
-      <div className="text-xs overflow-x-auto w-full">
+      <div className="text-xs overflow-x-auto overflow-y-auto h-full w-full">
         <table className="table-fixed w-full">
           <tbody>
-            {Object.entries(data.nodeData).map(([key, value]) => (
-              <tr key={key}>
-                {key !== "booleanSchema" && (
-                  <td className="font-medium break-words">{key}</td>
-                )}
-                <td className="break-words text-center">{String(value)}</td>
-              </tr>
-            ))}
+            {Object.entries(data.nodeData).flatMap(([key, value]) => {
+              if (Array.isArray(value)) {
+                return [
+                  <tr key={key}>
+                    <td className="font-medium whitespace-nowrap align-top">
+                      {key}
+                    </td>
+                    <td>
+                      <table className="w-full border">
+                        <tbody>
+                          {value.map((item, idx) => (
+                            <tr key={`${key}-item-${idx}`} className="border-t">
+                              <td className="px-1 py-1 whitespace-nowrap">
+                                {item}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>,
+                ];
+              }
+
+              return (
+                <tr key={key}>
+                  <td className="font-medium whitespace-nowrap">{key}</td>
+                  <td className="whitespace-nowrap">{String(value)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
