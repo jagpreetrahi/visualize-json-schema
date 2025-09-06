@@ -105,7 +105,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
     // "https://json-schema.org/keyword/draft-2020-12/dynamicRef": createBasicKeywordHandler("$dynamicRef"),
     "https://json-schema.org/keyword/ref": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         processAST(ast, keywordValue, nodes, edges, parentId, renderedNodes);
-        return { key: "$ref", value: [keywordValue] }
+        return { key: "$ref", value: keywordValue }
     },
     "https://json-schema.org/keyword/comment": createBasicKeywordHandler("$comment"),
     "https://json-schema.org/keyword/definitions": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
