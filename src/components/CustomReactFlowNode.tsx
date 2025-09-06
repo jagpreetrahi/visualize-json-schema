@@ -80,7 +80,7 @@ const CustomNode = ({
     >
       {!data.isLeafNode && <Handle type="source" position={Position.Right} />}
       <Handle type="target" position={Position.Left} />
-      <div className="text-xs overflow-x-auto overflow-y-auto h-full w-full">
+      <div className="flex text-xs overflow-x-auto overflow-y-auto h-full w-full">
         <table className="table-fixed w-full">
           <tbody>
             {Object.entries(data.nodeData).flatMap(([key, value]) => {
@@ -94,7 +94,10 @@ const CustomNode = ({
                       <table className="w-full border">
                         <tbody>
                           {value.map((item, idx) => (
-                            <tr key={`${key}-item-${idx}`} className="border-t">
+                            <tr
+                              key={`${key}-item-${idx}`}
+                              className="border-t text-center"
+                            >
                               <td className="px-1 py-1 whitespace-nowrap">
                                 {item}
                               </td>
@@ -109,8 +112,12 @@ const CustomNode = ({
 
               return (
                 <tr key={key}>
-                  <td className="font-medium whitespace-nowrap">{key}</td>
-                  <td className="whitespace-nowrap">{String(value)}</td>
+                  {key !== "booleanSchema" && (
+                    <td className="font-medium whitespace-nowrap">{key}</td>
+                  )}
+                  <td className="whitespace-nowrap text-center">
+                    {String(value)}
+                  </td>
                 </tr>
               );
             })}
