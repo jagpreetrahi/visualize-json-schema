@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { CompiledSchema } from "@hyperjump/json-schema/experimental";
 import "@xyflow/react/dist/style.css";
 import dagre from "@dagrejs/dagre";
@@ -11,9 +11,11 @@ import {
   Position,
   type Node,
   type Edge,
+  type NodeMouseHandler,
 } from "@xyflow/react";
 
 import CustomNode from "./CustomReactFlowNode";
+import NodeDetailsPopup from "./NodeDetailsPopup";
 import {
   processAST,
   type GraphEdge,
@@ -31,8 +33,20 @@ const GraphView = ({
 }: {
   compiledSchema: CompiledSchema | null;
 }) => {
+  const [expandedNode, setExpandedNode] = useState<{
+    nodeId: string;
+    data: Record<string, unknown>;
+  } | null>(null);
+
   const [nodes, setNodes, onNodeChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
+
+  const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
+    setExpandedNode({
+      nodeId: node.id,
+      data: node.data,
+    });
+  }, []);
 
   const generateNodesAndEdges = useCallback(
     (
@@ -111,6 +125,7 @@ const GraphView = ({
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        onNodeClick={onNodeClick}
         onNodesChange={onNodeChange}
         onEdgesChange={onEdgeChange}
         deleteKeyCode={null}
@@ -120,6 +135,13 @@ const GraphView = ({
         <Background />
         <Controls />
       </ReactFlow>
+
+      {expandedNode && (
+        <NodeDetailsPopup
+          data={expandedNode.data}
+          onClose={() => setExpandedNode(null)}
+        />
+      )}
     </div>
   );
 };
