@@ -1,6 +1,7 @@
 import { Handle, Position } from "@xyflow/react";
-import { useCallback, type CSSProperties } from "react";
+import { useCallback, useState, type CSSProperties } from "react";
 import { inferSchemaType } from "../utils/inferSchemaType";
+import { FaCompress, FaExpand } from "react-icons/fa";
 
 const nodeStyles: {
   [key: string]: Record<string, { [key: string]: string }>;
@@ -59,6 +60,7 @@ const CustomNode = ({
     isLeafNode?: boolean;
   };
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const getNodeStyle = useCallback(
     (data: {
       type?: string;
@@ -75,9 +77,22 @@ const CustomNode = ({
 
   return (
     <div
-      className="flex items-center px-3 py-2 w-[200px] h-[80px] rounded-lg shadow-sm"
+      className={`relative flex items-center px-3 py-2 rounded-lg shadow-sm transition-all duration-300 ${
+        isExpanded ? "z-50 w-[400px] h-[300px]" : "w-[200px] h-[80px]"
+      }`}
       style={nodeStyle}
     >
+      {!("booleanSchema" in data.nodeData) && (
+        <button
+          className="absolute top-1 right-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded((prev) => !prev);
+          }}
+        >
+          {isExpanded ? <FaCompress /> : <FaExpand size={10} />}
+        </button>
+      )}
       {!data.isLeafNode && <Handle type="source" position={Position.Right} />}
       <Handle type="target" position={Position.Left} />
       <div className="flex text-xs overflow-x-auto overflow-y-auto h-full w-full">
