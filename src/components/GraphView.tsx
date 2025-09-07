@@ -1,4 +1,7 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { CompiledSchema } from "@hyperjump/json-schema/experimental";
+import "@xyflow/react/dist/style.css";
+import dagre from "@dagrejs/dagre";
 import {
   ReactFlow,
   Background,
@@ -8,76 +11,55 @@ import {
   Position,
   type Node,
   type Edge,
+  type NodeMouseHandler,
 } from "@xyflow/react";
 
-import dagre from "@dagrejs/dagre";
-import "@xyflow/react/dist/style.css";
 import CustomNode from "./CustomReactFlowNode";
+import NodeDetailsPopup from "./NodeDetailsPopup";
+import {
+  processAST,
+  type GraphEdge,
+  type GraphNode,
+} from "../utils/processAST";
 
 const nodeTypes = { customNode: CustomNode };
-
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
 const nodeWidth = 172;
 const nodeHeight = 36;
 
-type GraphNode = {
-  id: string;
-  data: { label: string };
-  type: string;
-};
+const GraphView = ({
+  compiledSchema,
+}: {
+  compiledSchema: CompiledSchema | null;
+}) => {
+  const [expandedNode, setExpandedNode] = useState<{
+    nodeId: string;
+    data: Record<string, unknown>;
+  } | null>(null);
 
-type GraphEdge = {
-  id: string;
-  source: string;
-  target: string;
-};
-
-const GraphView = ({ schema }: { schema: string }) => {
   const [nodes, setNodes, onNodeChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
 
+  const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
+    setExpandedNode({
+      nodeId: node.id,
+      data: node.data,
+    });
+  }, []);
+
   const generateNodesAndEdges = useCallback(
     (
-      schema: JSON,
-      parentNodeId: string,
+      compiledSchema: CompiledSchema | null,
       nodes: GraphNode[] = [],
       edges: GraphEdge[] = []
     ) => {
-      if (parentNodeId === "root") {
-        nodes.push({
-          id: `${parentNodeId}`,
-          data: { label: JSON.stringify({ key: "root", value: {} }) },
-          type: "customNode",
-        });
-      }
-      for (const [key, value] of Object.entries(schema)) {
-        const isExpandable = value !== null && typeof value === "object";
-        const currentNodeId = `${parentNodeId}-${key}`;
+      if (!compiledSchema) return;
+      const { ast, schemaUri } = compiledSchema;
+      // console.log(ast)
+      // const result = processAST(ast, schemaUri, nodes, edges, "");
+      processAST(ast, schemaUri, nodes, edges, "");
 
-        const currentNodeData = {
-          key: key,
-          value: value,
-        };
-
-        const newNode = {
-          id: currentNodeId,
-          data: { label: JSON.stringify(currentNodeData) },
-          type: "customNode",
-        };
-
-        const newEdge = {
-          id: `${parentNodeId}-${currentNodeId}`,
-          source: parentNodeId,
-          target: currentNodeId,
-        };
-
-        if (isExpandable) {
-          generateNodesAndEdges(value, currentNodeId, nodes, edges);
-        }
-        nodes.push(newNode);
-        edges.push(newEdge);
-      }
       return { nodes, edges };
     },
     []
@@ -91,11 +73,9 @@ const GraphView = ({ schema }: { schema: string }) => {
       nodes.forEach((node) => {
         dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
       });
-
       edges.forEach((edge) => {
         dagreGraph.setEdge(edge.source, edge.target);
       });
-
       dagre.layout(dagreGraph);
 
       const newNodes = nodes.map((node) => {
@@ -121,11 +101,10 @@ const GraphView = ({ schema }: { schema: string }) => {
   );
 
   useEffect(() => {
-    const { nodes: rawNodes, edges: rawEdges } = generateNodesAndEdges(
-      JSON.parse(schema),
-      "root"
-    );
+    const result = generateNodesAndEdges(compiledSchema);
+    if (!result) return;
 
+    const { nodes: rawNodes, edges: rawEdges } = result;
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
       rawNodes,
       rawEdges
@@ -133,13 +112,20 @@ const GraphView = ({ schema }: { schema: string }) => {
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
-  }, [schema, generateNodesAndEdges, getLayoutedElements, setNodes, setEdges]);
+  }, [
+    compiledSchema,
+    generateNodesAndEdges,
+    getLayoutedElements,
+    setNodes,
+    setEdges,
+  ]);
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
+    <div className="relative w-full h-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        onNodeClick={onNodeClick}
         onNodesChange={onNodeChange}
         onEdgesChange={onEdgeChange}
         deleteKeyCode={null}
@@ -149,6 +135,13 @@ const GraphView = ({ schema }: { schema: string }) => {
         <Background />
         <Controls />
       </ReactFlow>
+
+      {expandedNode && (
+        <NodeDetailsPopup
+          data={expandedNode.data}
+          onClose={() => setExpandedNode(null)}
+        />
+      )}
     </div>
   );
 };

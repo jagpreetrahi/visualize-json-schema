@@ -1,28 +1,29 @@
 {
-  "$id": "https://example.com/job-posting.schema.json",
+  "$id": "https://example.com",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "A representation of a job posting",
   "type": "object",
-  "required": ["title", "company", "location", "description"],
   "properties": {
-    "title": {
-      "type": "string"
+    "foo": {
+      "$ref": "#/$defs/foo"
     },
-    "company": {
-      "type": "string"
-    },
-    "location": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
-    "employmentType": {
-      "type": "string"
+    "bar": { "const": null },
+    "baz": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "string" },
+        true,
+        { "$ref": "#/$defs/bar" }
+      ]
     }
+  },
+  "$defs": {
+    "bool": false,
+    "foo": {
+      "type": "object",
+      "properties": {
+        "a": { "type": "boolean" }
+      }
+    },
+    "bar": { "type": "number" }
   }
 }
-
-
-
-

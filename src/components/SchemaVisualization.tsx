@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { CgClose } from "react-icons/cg";
 import GraphView from "./GraphView";
+import { type CompiledSchema } from "@hyperjump/json-schema/experimental";
 
-const SchemaVisualization = ({ schema }: { schema: string }) => {
-  const views = ["Graph", "Tree"];
+const SchemaVisualization = ({
+  compiledSchema,
+}: {
+  compiledSchema: CompiledSchema | null;
+}) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorPopup, setShowErrorPopup] = useState(true);
-
-  const [currentView, setCurrentView] = useState("Graph");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const searchString = event.target.value.trim();
@@ -41,33 +43,7 @@ const SchemaVisualization = ({ schema }: { schema: string }) => {
 
   return (
     <>
-      {currentView === "Graph" ? (
-        <GraphView schema={schema} />
-      ) : (
-        <div className="flex justify-center mt-5">
-          <div className="w-fit  tracking-wide text-red-600 px-4 py-2 border-2 rounded-md ">
-            <span>Tree visualization is not supported at the moment</span>
-          </div>
-        </div>
-      )}
-
-      {/* View option*/}
-      <div className="absolute top-[10px] left-[10px] rounded-md overflow-hidden border border-gray-300">
-        {views.map((item, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentView(item)}
-            className={`px-3 py-1 text-sm font-medium cursor-pointer
-        ${
-          currentView === item
-            ? "bg-[var(--bottom-bg-color)] text-gray-100"
-            : "bg-gray-100 text-[var(--bottom-bg-color)] hover:bg-gray-200"
-        }`}
-          >
-            {item}
-          </button>
-        ))}
-      </div>
+      <GraphView compiledSchema={compiledSchema} />
 
       {/*Error Message */}
       {errorMessage && showErrorPopup && (
