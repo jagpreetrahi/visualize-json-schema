@@ -53,7 +53,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     renderedNodes.push(schemaUri);
 
     if (typeof schemaNodes === "boolean") {
-        console.log(222);
+        // console.log(222);
         nodeData["booleanSchema"] = schemaNodes;
         isLeafNode = true;
     } else {
