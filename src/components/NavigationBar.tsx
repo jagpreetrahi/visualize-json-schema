@@ -1,4 +1,4 @@
-import { BsBrightnessHigh } from "react-icons/bs";
+import { BsBrightnessHigh, BsMoonStars } from "react-icons/bs";
 import { FaGithub, FaSearch } from "react-icons/fa";
 import { useContext } from "react";
 import { Tooltip } from "react-tooltip";
@@ -6,7 +6,7 @@ import { AppContext } from "../contexts/AppContext";
 import FullscreenToggleButton from "./FullscreenToggleButton";
 
 const NavigationBar = () => {
-  const { toggleTheme } = useContext(AppContext);
+  const { toggleTheme, theme } = useContext(AppContext);
 
   return (
     <nav className="h-[10vh] flex justify-between items-center shadow-lg relative z-10">
@@ -28,9 +28,11 @@ const NavigationBar = () => {
             className="text-xl cursor-pointer"
             onClick={toggleTheme}
           >
-            <BsBrightnessHigh
+            {theme === "light" ?  <BsBrightnessHigh
               style={{ color: "var(--navigation-text-color)" }}
-            />
+              /> : <BsMoonStars style={{color : "var(--navigation-text-color)"}}/>
+            }
+           
           </button>
         </li>
         <li>
