@@ -49,6 +49,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     const nodeData: Record<string, unknown> = {};
     let schemaType: string | undefined;
     let isLeafNode: boolean | undefined = false;
+    let containsDefinition: boolean = false;
 
     renderedNodes.push(schemaUri);
     nodeData["nodeId"] = schemaUri;
@@ -60,11 +61,13 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     } else {
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             const handler = getKeywordHandler(toAbsoluteIri(keywordHandlerName));
-            const { key, value, LeafNode } = handler(ast, keywordValue as string, nodes, edges, schemaUri, renderedNodes);
+            const { key, value, LeafNode, defs } = handler(ast, keywordValue as string, nodes, edges, schemaUri, renderedNodes);
+
             if (key) {
                 nodeData[key] = value;
                 if (key === "type") schemaType = value as string;
             }
+            containsDefinition = defs;
             isLeafNode = LeafNode;
         }
     }
@@ -72,7 +75,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType, nodeData, isLeafNode }
+        data: { label: "", type: schemaType, nodeData, isLeafNode, containsDefinition }
     });
 
     if (parentId) {
@@ -88,7 +91,12 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
             source: parentId,
             target: schemaUri,
             // ...(subSchemaCount !==  undefined && { sourceHandle: String(subSchemaCount) })
-            sourceHandle: subSchemaCount !== undefined ? `${parentId}-${subSchemaCount}` : parentId
+            sourceHandle:
+                subSchemaCount === true
+                    ? `${parentId}-definitions`
+                    : subSchemaCount !== undefined
+                        ? `${parentId}-${subSchemaCount}`
+                        : parentId
         });
     }
     // return { nodes, edges };
@@ -127,10 +135,10 @@ const keywordHandlerMap: KeywordHandlerMap = {
             ]
         ];
         // for (const item of keywordValue) {
-        processAST(ast, "https://json-schema.org/keyword/$defs", nodes, edges, parentId, renderedNodes);
+        processAST(ast, "https://json-schema.org/keyword/$defs", nodes, edges, parentId, renderedNodes, true);
         // }
         // return { key: "$defs", value: keywordValue.length }
-        return {}
+        return { defs: true }
     },
     "https://json-schema.org/keyword/$defs": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const [index, item] of keywordValue.entries()) {

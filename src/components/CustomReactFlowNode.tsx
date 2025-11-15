@@ -68,6 +68,7 @@ const CustomNode = ({
     type: string;
     nodeData: Record<string, unknown>;
     isLeafNode?: boolean;
+    containsDefinition: boolean;
   };
 }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -115,6 +116,13 @@ const CustomNode = ({
       style={nodeStyle}
     >
       <Handle type="target" position={Position.Left} />
+      {data.containsDefinition && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          id={`${nodeId}-definitions`}
+        />
+      )}
 
       {!data.isLeafNode &&
         entries
@@ -189,14 +197,6 @@ const CustomNode = ({
       </div>
     </div>
   );
-  // return (
-  //   <div className="custom-node">
-  //     <div>Custom Node Content</div>
-  //     <Handle type="target" position={Position.Right} />
-  //     <Handle type="source" position={Position.Top} id="a" />
-  //     <Handle type="source" position={Position.Bottom} id="b" />
-  //   </div>
-  // );
 };
 
 export default CustomNode;
