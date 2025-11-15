@@ -174,7 +174,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
         const propertyNames = [];
         for (const [key, value] of Object.entries(keywordValue)) {
             propertyNames.push(key);
-            processAST(ast, value as string, nodes, edges, parentId, renderedNodes);
+            processAST(ast, value as string, nodes, edges, parentId, renderedNodes, key);
         }
         return { key: "properties", value: propertyNames }
     },
