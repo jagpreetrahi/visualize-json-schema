@@ -1,4 +1,4 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Position, useUpdateNodeInternals } from "@xyflow/react";
 import {
   useCallback,
   useEffect,
@@ -60,9 +60,11 @@ const ROW_HEIGHT = 20; // px
 const AVAILABLE_HEIGHT = NODE_HEIGHT - 16;
 
 const CustomNode = ({
+  id,
   data,
 }: {
   data: {
+    id: string;
     label: string;
     type: string;
     nodeData: Record<string, unknown>;
@@ -83,12 +85,16 @@ const CustomNode = ({
   );
 
   const nodeStyle = getNodeStyle(data);
+
   const entries = useMemo(() => {
     return Object.entries(data.nodeData).map(([key, value]) => ({
       key,
+      rawValue: value,
       displayValue: Array.isArray(value) ? value.length : String(value),
     }));
   }, [data.nodeData]);
+
+  const nodeId = entries.find((e) => e.key === "nodeId")?.displayValue;
 
   const maxVisibleRows = Math.floor(AVAILABLE_HEIGHT / ROW_HEIGHT);
   const visibleRows =
@@ -104,28 +110,115 @@ const CustomNode = ({
     }
   }, [entries.length, maxVisibleRows]);
 
+  const updateNodeInternals = useUpdateNodeInternals();
+  useEffect(() => {
+    setTimeout(() => {
+      updateNodeInternals(id);
+    }, 0);
+  }, [id, updateNodeInternals]);
+
   return (
     <div
       className={`relative p-3 rounded-sm shadow-sm w-[200px] h-[${NODE_HEIGHT}px]`}
       style={nodeStyle}
     >
-      {!data.isLeafNode && <Handle type="source" position={Position.Right} />}
+      {/* {!data.isLeafNode && <Handle type="source" position={Position.Right} />} */}
       <Handle type="target" position={Position.Left} />
+      {/* <Handle type="source" position={Position.Top} /> */}
+      {/* <Handle type="source" position={Position.Top} /> */}
+      {/* <RandomHandleNode id={id} /> */}
+
+      {/* <Handle type="target" position={Position.Right} />
+      <Handle type="source" position={Position.Top} id="a" />
+      <Handle type="source" position={Position.Bottom} id="b" /> */}
+
+      {/* <Handle type="source" position={Position.Bottom} id="null" /> */}
+
+      {entries.map((entry) => {
+        const count = Number(entry.displayValue); // parse it
+        if (!Number.isFinite(count) || count < 0) {
+          return (
+            <Handle
+              key={`${entry.key}-${nodeId}`}
+              type="source"
+              position={Position.Right}
+              id={`${nodeId}`}
+              // style={{ top: 10  * 10 }} // position them however you want
+            />
+          );
+        } else {
+          return Array.from({ length: count }).map((_, i) => (
+            <Handle
+              key={`${entry.key}-${nodeId}-${i}`}
+              type="source"
+              position={Position.Right}
+              id={`${nodeId}-${i}`}
+              style={{ top: 10 + i * 10 }} // position them however you want
+            />
+          ));
+        }
+      })}
+
+      {/* {entries
+        .filter((entry) => entry.key !== "nodeId") // skip nodeId row
+        .flatMap((entry) => {
+          const { key, rawValue, displayValue } = entry;
+
+          // CASE 1: Array → multiple handles
+          if (Array.isArray(rawValue)) {
+            return rawValue.map((_, i) => (
+              <Handle
+                key={`${nodeId}-${i}`}
+                id={`${nodeId}-${i}`}
+                type="source"
+                position={Position.Right}
+                style={{ top: 10 + i * 10 }}
+              />
+            ));
+          }
+
+          // CASE 2: Number or numeric string → multiple handles
+          const numeric = Number(displayValue);
+          if (!Number.isNaN(numeric) && numeric > 0) {
+            return Array.from({ length: numeric }).map((_, i) => (
+              <Handle
+                key={`${nodeId}-${i}`}
+                id={`${nodeId}-${i}`}
+                type="source"
+                position={Position.Right}
+                style={{ top: 10 + i * 10 }}
+              />
+            ));
+          }
+
+          // CASE 3: Non-numeric string → exactly one handle
+          return (
+            <Handle
+              key={nodeId}
+              id={nodeId}
+              type="source"
+              position={Position.Right}
+            />
+          );
+        })} */}
+
       <div className="flex text-xs overflow-x-auto overflow-y-auto h-full w-full">
         <table className="table-fixed w-full">
           <tbody>
-            {visibleRows.map(({ key, displayValue }) => {
-              return (
-                <tr key={key}>
-                  {key !== "booleanSchema" && (
-                    <td className="font-medium whitespace-nowrap">{key}</td>
-                  )}
-                  <td className="whitespace-nowrap text-ellipsis overflow-hidden text-center">
-                    {displayValue}
-                  </td>
-                </tr>
-              );
-            })}
+            {visibleRows
+              .filter((row) => row.key !== "nodeId")
+              .map(({ key, displayValue }) => {
+                return (
+                  <tr key={key}>
+                    {key !== "booleanSchema" && (
+                      <td className="font-medium whitespace-nowrap">{key}</td>
+                    )}
+                    <td className="whitespace-nowrap text-ellipsis overflow-hidden text-center">
+                      {displayValue}
+                    </td>
+                  </tr>
+                );
+              })}
             {isOverflowing && (
               <tr>
                 <td colSpan={2} className="text-gray-500 italic">
@@ -138,6 +231,14 @@ const CustomNode = ({
       </div>
     </div>
   );
+  // return (
+  //   <div className="custom-node">
+  //     <div>Custom Node Content</div>
+  //     <Handle type="target" position={Position.Right} />
+  //     <Handle type="source" position={Position.Top} id="a" />
+  //     <Handle type="source" position={Position.Bottom} id="b" />
+  //   </div>
+  // );
 };
 
 export default CustomNode;
