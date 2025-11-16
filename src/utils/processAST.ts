@@ -63,11 +63,11 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
             const handler = getKeywordHandler(toAbsoluteIri(keywordHandlerName));
             const { key, value, LeafNode, defs } = handler(ast, keywordValue as string, nodes, edges, schemaUri, renderedNodes);
 
+            if (defs) containsDefinition = true;
             if (key) {
                 nodeData[key] = value;
                 if (key === "type") schemaType = value as string;
             }
-            containsDefinition = defs;
             isLeafNode = LeafNode;
         }
     }
