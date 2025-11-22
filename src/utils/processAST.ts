@@ -58,7 +58,6 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     let containsDefinition: boolean = false;
 
     renderedNodes.push(schemaUri);
-    nodeData["nodeId"] = schemaUri;
 
     if (typeof schemaNodes === "boolean") {
         // console.log(222);
@@ -78,22 +77,16 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
         }
     }
 
+    const sourceHandles = generateSourceHandles(nodeData, schemaUri);
     const targetHandles = [];
 
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType, nodeData, isLeafNode, containsDefinition, targetHandles }
+        data: { label: "", type: schemaType, nodeData, isLeafNode, containsDefinition, sourceHandles, targetHandles }
     });
 
     if (parentId) {
-        // console.log({
-        //     id: `${parentId}-${schemaUri}`,
-        //     source: parentId,
-        //     target: schemaUri,
-        //     // ...(subSchemaCount !==  undefined && { sourceHandle: String(subSchemaCount) })
-        //     sourceHandle: subSchemaCount !== undefined ? `${parentId}-${subSchemaCount}` : parentId
-        // })
         const sourceHandle = getSourceHandle(subSchemaCount, parentId);
         const targetHandle = `${getSourceHandle(subSchemaCount, parentId)}-target`;
         edges.push({
@@ -115,14 +108,54 @@ const getSourceHandle = (subSchemaCount, parentId) => {
     return parentId;
 };
 
-const updateNodeProperties = (nodes, nodeId, targetHadle, position) => {
+const generateSourceHandles = (nodeData, nodeId) => {
+    if (!nodeData) return [];
+
+    const handleIds = [];
+
+    for (const [key, value] of Object.entries(nodeData)) {
+
+        // CASE 1: Array --> generate 1 handle per element
+        if (Array.isArray(value)) {
+            value.forEach((eachValue) => {
+                handleIds.push({
+                    handleId: `${nodeId}-${eachValue}`,
+                    position: Position.Right
+                })
+            })
+            continue;
+        }
+
+        // CASE 2: Numeric or numeric string
+        const numeric = Number(value);
+        if (!Number.isNaN(numeric) && numeric > 0) {
+            for (let i = 0; i < numeric; i++) {
+                handleIds.push({
+                    handleId: `${nodeId}-${i}`,
+                    position: Position.Right
+                })
+            }
+            continue;
+        }
+
+        // CASE 3: Everything else --> 1 handle for this property
+        if (key === "$ref") {
+            handleIds.push({ handleId: `${nodeId}`, position: Position.Right });
+        }
+    }
+
+    return handleIds;
+}
+
+const updateNodeProperties = (nodes, nodeId, handleId, position) => {
     const node = nodes.find(n => n.id === nodeId);
     if (!node) {
-        throw new Error(`Node with id ${nodeId} not found`);
+        // throw new Error(`Node with id ${nodeId} not found`);
+        console.log(`Node with id ${nodeId} not found`)
+        return;
     }
-    const handleDetails = { handleId: targetHadle, position: position}
+    const handleDetails = { handleId: handleId, position: position }
     node.data.targetHandles.push(handleDetails);
-
 }
 
 const getKeywordHandler: GetKeywordHandler = (handlerName) => {

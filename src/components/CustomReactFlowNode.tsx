@@ -60,8 +60,10 @@ const ROW_HEIGHT = 20; // px
 const AVAILABLE_HEIGHT = NODE_HEIGHT - 16;
 
 const CustomNode = ({
+  id,
   data,
 }: {
+  id: string;
   data: {
     id: string;
     label: string;
@@ -70,6 +72,7 @@ const CustomNode = ({
     isLeafNode?: boolean;
     containsDefinition: boolean;
     targetHandles: string[];
+    sourceHandles: string[];
   };
 }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -95,8 +98,6 @@ const CustomNode = ({
     }));
   }, [data.nodeData]);
 
-  const nodeId = entries.find((e) => e.key === "nodeId")?.displayValue;
-
   const maxVisibleRows = Math.floor(AVAILABLE_HEIGHT / ROW_HEIGHT);
   const visibleRows =
     entries.length > maxVisibleRows
@@ -116,6 +117,14 @@ const CustomNode = ({
       className={`relative p-3 rounded-sm shadow-sm w-[200px] h-[${NODE_HEIGHT}px]`}
       style={nodeStyle}
     >
+      {data.containsDefinition && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          id={`${id}-definitions`}
+        />
+      )}
+
       {data.targetHandles.map(({ handleId, position }) => (
         <Handle
           key={handleId}
@@ -125,75 +134,31 @@ const CustomNode = ({
         />
       ))}
 
-      {data.containsDefinition && (
+      {data.sourceHandles.map(({ handleId, position }, i) => (
         <Handle
+          key={handleId}
           type="source"
-          position={Position.Bottom}
-          id={`${nodeId}-definitions`}
+          position={position}
+          id={handleId}
+          style={{ top: 10 + i * 10 }}
         />
-      )}
-
-      {!data.isLeafNode &&
-        entries
-          .filter((entry) => entry.key !== "nodeId") // skip nodeId row
-          .flatMap((entry) => {
-            const { key, rawValue, displayValue } = entry;
-
-            // CASE 1: Array --> multiple handles
-            if (Array.isArray(rawValue)) {
-              return rawValue.map((_, i) => (
-                <Handle
-                  key={`${nodeId}-${i}`}
-                  id={`${nodeId}-${rawValue[i]}`}
-                  type="source"
-                  position={Position.Right}
-                  style={{ top: 10 + i * 10 }}
-                />
-              ));
-            }
-
-            // CASE 2: Number or numeric string --> multiple handles
-            const numeric = Number(displayValue);
-            if (!Number.isNaN(numeric) && numeric > 0) {
-              return Array.from({ length: numeric }).map((_, i) => (
-                <Handle
-                  key={`${nodeId}-${i}`}
-                  id={`${nodeId}-${i}`}
-                  type="source"
-                  position={Position.Right}
-                  style={{ top: 10 + i * 10 }}
-                />
-              ));
-            }
-
-            // CASE 3: Non-numeric string --> exactly one handle
-            return (
-              <Handle
-                key={nodeId}
-                id={`${nodeId}`}
-                type="source"
-                position={Position.Right}
-              />
-            );
-          })}
+      ))}
 
       <div className="flex text-xs overflow-x-auto overflow-y-auto h-full w-full">
         <table className="table-fixed w-full">
           <tbody>
-            {visibleRows
-              .filter((row) => row.key !== "nodeId")
-              .map(({ key, displayValue }) => {
-                return (
-                  <tr key={key}>
-                    {key !== "booleanSchema" && (
-                      <td className="font-medium whitespace-nowrap">{key}</td>
-                    )}
-                    <td className="whitespace-nowrap text-ellipsis overflow-hidden text-center">
-                      {displayValue}
-                    </td>
-                  </tr>
-                );
-              })}
+            {visibleRows.map(({ key, displayValue }) => {
+              return (
+                <tr key={key}>
+                  {key !== "booleanSchema" && (
+                    <td className="font-medium whitespace-nowrap">{key}</td>
+                  )}
+                  <td className="whitespace-nowrap text-ellipsis overflow-hidden text-center">
+                    {displayValue}
+                  </td>
+                </tr>
+              );
+            })}
             {isOverflowing && (
               <tr>
                 <td colSpan={2} className="text-gray-500 italic">
