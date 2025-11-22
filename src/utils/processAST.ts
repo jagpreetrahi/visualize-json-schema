@@ -1,5 +1,6 @@
 import type { AST } from "@hyperjump/json-schema/experimental";
 import { toAbsoluteIri } from "@hyperjump/uri";
+import { Position } from "@xyflow/react";
 
 export type GraphNode = {
     id: string;
@@ -36,11 +37,16 @@ type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
 export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, renderedNodes = [], subSchemaCount = undefined) => {
     if (renderedNodes.includes(schemaUri)) {
         if (parentId) {
+            const sourceHandle = getSourceHandle(subSchemaCount, parentId);
+            const targetHandle = `${getSourceHandle(subSchemaCount, parentId)}-target`;
             edges.push({
                 id: `${parentId}-${schemaUri}`,
                 source: parentId,
-                target: schemaUri
+                target: schemaUri,
+                sourceHandle: sourceHandle,
+                targetHandle: targetHandle
             });
+            updateNodeProperties(nodes, schemaUri, targetHandle, Position.Top);
         }
         return;
     }
@@ -72,10 +78,12 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
         }
     }
 
+    const targetHandles = [];
+
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType, nodeData, isLeafNode, containsDefinition }
+        data: { label: "", type: schemaType, nodeData, isLeafNode, containsDefinition, targetHandles }
     });
 
     if (parentId) {
@@ -86,22 +94,36 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
         //     // ...(subSchemaCount !==  undefined && { sourceHandle: String(subSchemaCount) })
         //     sourceHandle: subSchemaCount !== undefined ? `${parentId}-${subSchemaCount}` : parentId
         // })
+        const sourceHandle = getSourceHandle(subSchemaCount, parentId);
+        const targetHandle = `${getSourceHandle(subSchemaCount, parentId)}-target`;
         edges.push({
             id: `${parentId}-${schemaUri}`,
             source: parentId,
             target: schemaUri,
-            // ...(subSchemaCount !==  undefined && { sourceHandle: String(subSchemaCount) })
-            sourceHandle:
-                subSchemaCount === true
-                    ? `${parentId}-definitions`
-                    : subSchemaCount !== undefined
-                        ? `${parentId}-${subSchemaCount}`
-                        : parentId
+            sourceHandle: sourceHandle,
+            targetHandle: targetHandle
         });
+        updateNodeProperties(nodes, schemaUri, targetHandle, Position.Left)
     }
     // return { nodes, edges };
 
 };
+
+const getSourceHandle = (subSchemaCount, parentId) => {
+    if (subSchemaCount === true) return `${parentId}-definitions`;
+    if (subSchemaCount !== undefined) return `${parentId}-${subSchemaCount}`;
+    return parentId;
+};
+
+const updateNodeProperties = (nodes, nodeId, targetHadle, position) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) {
+        throw new Error(`Node with id ${nodeId} not found`);
+    }
+    const handleDetails = { handleId: targetHadle, position: position}
+    node.data.targetHandles.push(handleDetails);
+
+}
 
 const getKeywordHandler: GetKeywordHandler = (handlerName) => {
     if (!(handlerName in keywordHandlerMap)) {

@@ -69,6 +69,7 @@ const CustomNode = ({
     nodeData: Record<string, unknown>;
     isLeafNode?: boolean;
     containsDefinition: boolean;
+    targetHandles: string[];
   };
 }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -115,7 +116,15 @@ const CustomNode = ({
       className={`relative p-3 rounded-sm shadow-sm w-[200px] h-[${NODE_HEIGHT}px]`}
       style={nodeStyle}
     >
-      <Handle type="target" position={Position.Left} />
+      {data.targetHandles.map(({ handleId, position }) => (
+        <Handle
+          key={handleId}
+          type="target"
+          position={position}
+          id={handleId}
+        />
+      ))}
+
       {data.containsDefinition && (
         <Handle
           type="source"
