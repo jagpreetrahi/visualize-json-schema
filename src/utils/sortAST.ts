@@ -3,7 +3,7 @@ import type { AST } from "@hyperjump/json-schema/experimental";
 export const sortAST = (ast: AST) => {
     const DEF_KEY = "https://json-schema.org/keyword/definitions";
 
-    const sortedAst: Record<string, unknown[]> = {};
+    const sortedAst: AST = {} as AST;
 
     for (const key of Object.keys(ast)) {
         const value = ast[key];
