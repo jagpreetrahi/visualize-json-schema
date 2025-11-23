@@ -250,6 +250,12 @@ const keywordHandlerMap: KeywordHandlerMap = {
     "https://json-schema.org/keyword/unknown": createBasicKeywordHandler("unknown"),
 
     // Unevaluated
-    // "https://json-schema.org/keyword/unevaluatedProperties": createBasicKeywordHandler("unevaluatedProperties"),
-    // "https://json-schema.org/keyword/unevaluatedItems": createBasicKeywordHandler("unevaluatedItems")
+    "https://json-schema.org/keyword/unevaluatedProperties": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue[1], nodes, edges, parentId, renderedNodes);
+        return { key: "unevaluatedProperties", value: keywordValue[1] }
+    },
+    "https://json-schema.org/keyword/unevaluatedItems": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
+        processAST(ast, keywordValue[1], nodes, edges, parentId, renderedNodes);
+        return { key: "unevaluatedItems", value: keywordValue[1] }
+    }
 };
