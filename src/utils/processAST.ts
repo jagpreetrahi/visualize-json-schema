@@ -247,7 +247,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
     },
     "https://json-schema.org/keyword/items": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         processAST(ast, keywordValue[1], nodes, edges, parentId, renderedNodes);
-        return { key: "items", value: keywordValue }
+        return { key: "items", value: keywordValue[1] }
     },
     "https://json-schema.org/keyword/prefixItems": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         for (const [index, item] of keywordValue.entries()) {
