@@ -1,5 +1,6 @@
 import type { AST } from "@hyperjump/json-schema/experimental";
 import { toAbsoluteIri } from "@hyperjump/uri";
+import { Position } from "@xyflow/react";
 
 export type GraphNode = {
     id: string;
@@ -8,7 +9,6 @@ export type GraphNode = {
         label: string,
         type?: string,
         nodeData: Record<string, unknown>,
-        isLeafNode?: boolean
     };
 };
 
@@ -28,19 +28,24 @@ type ASTContext = [
 ];
 
 type ProcessAST = (...args: ASTContext) => void;
-type KeywordHandler = (...args: ASTContext) => { key?: string, value?: unknown, LeafNode?: boolean };
+type KeywordHandler = (...args: ASTContext) => { key?: string, value?: unknown };
 type GetKeywordHandler = (handlerName: string) => KeywordHandler;
 type KeywordHandlerMap = Record<string, KeywordHandler>;
 type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
 
-export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, renderedNodes = []) => {
+export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, renderedNodes = [], subSchemaCount = undefined) => {
     if (renderedNodes.includes(schemaUri)) {
         if (parentId) {
+            const sourceHandle = getSourceHandle(subSchemaCount, parentId);
+            const targetHandle = `${getSourceHandle(subSchemaCount, parentId)}-target`;
             edges.push({
                 id: `${parentId}-${schemaUri}`,
                 source: parentId,
-                target: schemaUri
+                target: schemaUri,
+                sourceHandle: sourceHandle,
+                targetHandle: targetHandle
             });
+            updateNodeHandles(nodes, schemaUri, targetHandle, Position.Top);
         }
         return;
     }
@@ -48,42 +53,97 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     const schemaNodes = ast[schemaUri];
     const nodeData: Record<string, unknown> = {};
     let schemaType: string | undefined;
-    let isLeafNode: boolean | undefined = false;
+
+    const sourceHandles = [];
+    const targetHandles = [];
 
     renderedNodes.push(schemaUri);
 
     if (typeof schemaNodes === "boolean") {
-        // console.log(222);
         nodeData["booleanSchema"] = schemaNodes;
-        isLeafNode = true;
     } else {
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             const handler = getKeywordHandler(toAbsoluteIri(keywordHandlerName));
-            const { key, value, LeafNode } = handler(ast, keywordValue as string, nodes, edges, schemaUri, renderedNodes);
+            const { key, value, leafNode, defs } = handler(ast, keywordValue as string, nodes, edges, schemaUri, renderedNodes);
+
             if (key) {
                 nodeData[key] = value;
                 if (key === "type") schemaType = value as string;
             }
-            isLeafNode = LeafNode;
+            if (!leafNode) {
+                sourceHandles.push(...generateSourceHandles(value, schemaUri, defs));
+            }
         }
     }
-
+    
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType, nodeData, isLeafNode }
+        data: { label: "", type: schemaType, nodeData, sourceHandles, targetHandles }
     });
 
     if (parentId) {
+        const sourceHandle = getSourceHandle(subSchemaCount, parentId);
+        const targetHandle = `${getSourceHandle(subSchemaCount, parentId)}-target`;
         edges.push({
             id: `${parentId}-${schemaUri}`,
             source: parentId,
-            target: schemaUri
+            target: schemaUri,
+            sourceHandle: sourceHandle,
+            targetHandle: targetHandle
         });
+        updateNodeHandles(nodes, schemaUri, targetHandle, Position.Left)
     }
     // return { nodes, edges };
 
 };
+
+const getSourceHandle = (subSchemaCount, parentId) => {
+    if (subSchemaCount === true) return `${parentId}-definitions`;
+    if (subSchemaCount !== undefined) return `${parentId}-${subSchemaCount}`;
+    return parentId;
+};
+
+const generateSourceHandles = (keywordValue, nodeId, defs) => {
+    if (defs) return [{
+        handleId: `${nodeId}-definitions`,
+        position: Position.Bottom
+    }];
+
+    // CASE 1: Array --> generate 1 handle per element
+    if (Array.isArray(keywordValue)) {
+        return keywordValue.map((eachValue) => ({
+            handleId: `${nodeId}-${eachValue}`,
+            position: Position.Right
+        }))
+    }
+
+    // CASE 2: Numeric or numeric string
+    const numeric = Number(keywordValue);
+    if (!Number.isNaN(numeric) && numeric > 0) {
+        return Array.from({ length: numeric }).map((_, i) => ({
+            handleId: `${nodeId}-${i}`,
+            position: Position.Right,
+        }));
+    }
+
+    // CASE 3: Everything else --> 1 handle for this property
+    return [{
+        handleId: `${nodeId}`,
+        position: Position.Right
+    }];
+}
+
+const updateNodeHandles = (nodes, nodeId, handleId, position) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) {
+        // throw new Error(`Node with id ${nodeId} not found`);
+        console.log(`Node with id ${nodeId} not found`)
+        return;
+    }
+    const handleDetails = { handleId: handleId, position: position }
+    node.data.targetHandles.push(handleDetails);
+}
 
 const getKeywordHandler: GetKeywordHandler = (handlerName) => {
     if (!(handlerName in keywordHandlerMap)) {
@@ -94,7 +154,7 @@ const getKeywordHandler: GetKeywordHandler = (handlerName) => {
 
 const createBasicKeywordHandler: CreateBasicKeywordHandler = (key) => {
     return (_ast, keywordValue, _nodes, _edges, _parentId) => {
-        return { key, value: keywordValue, LeafNode: true }
+        return { key, value: keywordValue, leafNode: true }
     }
 }
 
@@ -117,34 +177,34 @@ const keywordHandlerMap: KeywordHandlerMap = {
             ]
         ];
         // for (const item of keywordValue) {
-        processAST(ast, "https://json-schema.org/keyword/$defs", nodes, edges, parentId, renderedNodes);
+        processAST(ast, "https://json-schema.org/keyword/$defs", nodes, edges, parentId, renderedNodes, true);
         // }
         // return { key: "$defs", value: keywordValue.length }
-        return {}
+        return { defs: true }
     },
     "https://json-schema.org/keyword/$defs": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
-        for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId, renderedNodes);
+        for (const [index, item] of keywordValue.entries()) {
+            processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
         return { key: "$defs", value: keywordValue.length }
     },
 
     // Applicator
     "https://json-schema.org/keyword/allOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
-        for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId, renderedNodes);
+        for (const [index, item] of keywordValue.entries()) {
+            processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
         return { key: "allOf", value: keywordValue.length }
     },
     "https://json-schema.org/keyword/anyOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
-        for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId, renderedNodes);
+        for (const [index, item] of keywordValue.entries()) {
+            processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
         return { key: "anyOf", value: keywordValue.length }
     },
     "https://json-schema.org/keyword/oneOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
-        for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId, renderedNodes);
+        for (const [index, item] of keywordValue.entries()) {
+            processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
         return { key: "oneOf", value: keywordValue.length }
     },
@@ -164,7 +224,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
         const propertyNames = [];
         for (const [key, value] of Object.entries(keywordValue)) {
             propertyNames.push(key);
-            processAST(ast, value as string, nodes, edges, parentId, renderedNodes);
+            processAST(ast, value as string, nodes, edges, parentId, renderedNodes, key);
         }
         return { key: "properties", value: propertyNames }
     },
@@ -173,8 +233,8 @@ const keywordHandlerMap: KeywordHandlerMap = {
         return { key: "additionalProperties", value: keywordValue[1] }
     },
     "https://json-schema.org/keyword/patternProperties": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
-        for (const item of keywordValue) {
-            processAST(ast, item[1], nodes, edges, parentId, renderedNodes);
+        for (const [index, item] of keywordValue.entries()) {
+            processAST(ast, item[1], nodes, edges, parentId, renderedNodes, index);
         }
         return { key: "patternProperties", value: keywordValue.length }
     },
@@ -187,11 +247,11 @@ const keywordHandlerMap: KeywordHandlerMap = {
     },
     "https://json-schema.org/keyword/items": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         processAST(ast, keywordValue[1], nodes, edges, parentId, renderedNodes);
-        return { key: "items", value: keywordValue }
+        return { key: "items", value: keywordValue[1] }
     },
     "https://json-schema.org/keyword/prefixItems": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
-        for (const item of keywordValue) {
-            processAST(ast, item, nodes, edges, parentId, renderedNodes);
+        for (const [index, item] of keywordValue.entries()) {
+            processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
         return { key: "prefixItems", value: keywordValue.length }
     },

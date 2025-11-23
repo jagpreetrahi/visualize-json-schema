@@ -21,6 +21,7 @@ import {
   type GraphEdge,
   type GraphNode,
 } from "../utils/processAST";
+import { sortAST } from "../utils/sortAST";
 
 const nodeTypes = { customNode: CustomNode };
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
@@ -58,7 +59,7 @@ const GraphView = ({
       const { ast, schemaUri } = compiledSchema;
       // console.log(ast)
       // const result = processAST(ast, schemaUri, nodes, edges, "");
-      processAST(ast, schemaUri, nodes, edges, "");
+      processAST(sortAST(ast), schemaUri, nodes, edges, "");
 
       return { nodes, edges };
     },

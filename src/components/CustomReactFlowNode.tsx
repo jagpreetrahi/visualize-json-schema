@@ -1,4 +1,4 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle } from "@xyflow/react";
 import {
   useCallback,
   useEffect,
@@ -63,10 +63,12 @@ const CustomNode = ({
   data,
 }: {
   data: {
+    id: string;
     label: string;
     type: string;
     nodeData: Record<string, unknown>;
-    isLeafNode?: boolean;
+    targetHandles: string[];
+    sourceHandles: string[];
   };
 }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -83,9 +85,11 @@ const CustomNode = ({
   );
 
   const nodeStyle = getNodeStyle(data);
+
   const entries = useMemo(() => {
     return Object.entries(data.nodeData).map(([key, value]) => ({
       key,
+      rawValue: value,
       displayValue: Array.isArray(value) ? value.length : String(value),
     }));
   }, [data.nodeData]);
@@ -109,8 +113,25 @@ const CustomNode = ({
       className={`relative p-3 rounded-sm shadow-sm w-[200px] h-[${NODE_HEIGHT}px]`}
       style={nodeStyle}
     >
-      {!data.isLeafNode && <Handle type="source" position={Position.Right} />}
-      <Handle type="target" position={Position.Left} />
+      {data.targetHandles.map(({ handleId, position }) => (
+        <Handle
+          key={handleId}
+          type="target"
+          position={position}
+          id={handleId}
+        />
+      ))}
+
+      {data.sourceHandles.map(({ handleId, position }, i) => (
+        <Handle
+          key={handleId}
+          type="source"
+          position={position}
+          id={handleId}
+          style={position === "bottom" ? {} : { top: 10 + i * 10 }}
+        />
+      ))}
+
       <div className="flex text-xs overflow-x-auto overflow-y-auto h-full w-full">
         <table className="table-fixed w-full">
           <tbody>
