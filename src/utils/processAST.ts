@@ -9,7 +9,6 @@ export type GraphNode = {
         label: string,
         type?: string,
         nodeData: Record<string, unknown>,
-        isLeafNode?: boolean
     };
 };
 
@@ -29,7 +28,7 @@ type ASTContext = [
 ];
 
 type ProcessAST = (...args: ASTContext) => void;
-type KeywordHandler = (...args: ASTContext) => { key?: string, value?: unknown, LeafNode?: boolean };
+type KeywordHandler = (...args: ASTContext) => { key?: string, value?: unknown };
 type GetKeywordHandler = (handlerName: string) => KeywordHandler;
 type KeywordHandlerMap = Record<string, KeywordHandler>;
 type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
@@ -54,36 +53,33 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     const schemaNodes = ast[schemaUri];
     const nodeData: Record<string, unknown> = {};
     let schemaType: string | undefined;
-    let isLeafNode: boolean | undefined = false;
-    let containsDefinition: boolean = false;
+
+    const sourceHandles = [];
+    const targetHandles = [];
 
     renderedNodes.push(schemaUri);
 
     if (typeof schemaNodes === "boolean") {
-        // console.log(222);
         nodeData["booleanSchema"] = schemaNodes;
-        isLeafNode = true;
     } else {
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             const handler = getKeywordHandler(toAbsoluteIri(keywordHandlerName));
-            const { key, value, LeafNode, defs } = handler(ast, keywordValue as string, nodes, edges, schemaUri, renderedNodes);
+            const { key, value, leafNode, defs } = handler(ast, keywordValue as string, nodes, edges, schemaUri, renderedNodes);
 
-            if (defs) containsDefinition = true;
             if (key) {
                 nodeData[key] = value;
                 if (key === "type") schemaType = value as string;
             }
-            isLeafNode = LeafNode;
+            if (!leafNode) {
+                sourceHandles.push(...generateSourceHandles(value, schemaUri, defs));
+            }
         }
     }
-
-    const sourceHandles = generateSourceHandles(nodeData, schemaUri);
-    const targetHandles = [];
 
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType, nodeData, isLeafNode, containsDefinition, sourceHandles, targetHandles }
+        data: { label: "", type: schemaType, nodeData, sourceHandles, targetHandles }
     });
 
     if (parentId) {
@@ -108,43 +104,34 @@ const getSourceHandle = (subSchemaCount, parentId) => {
     return parentId;
 };
 
-const generateSourceHandles = (nodeData, nodeId) => {
-    if (!nodeData) return [];
+const generateSourceHandles = (keywordValue, nodeId, defs) => {
+    if (defs) return [{
+        handleId: `${nodeId}-definitions`,
+        position: Position.Bottom
+    }];
 
-    const handleIds = [];
-
-    for (const [key, value] of Object.entries(nodeData)) {
-
-        // CASE 1: Array --> generate 1 handle per element
-        if (Array.isArray(value)) {
-            value.forEach((eachValue) => {
-                handleIds.push({
-                    handleId: `${nodeId}-${eachValue}`,
-                    position: Position.Right
-                })
-            })
-            continue;
-        }
-
-        // CASE 2: Numeric or numeric string
-        const numeric = Number(value);
-        if (!Number.isNaN(numeric) && numeric > 0) {
-            for (let i = 0; i < numeric; i++) {
-                handleIds.push({
-                    handleId: `${nodeId}-${i}`,
-                    position: Position.Right
-                })
-            }
-            continue;
-        }
-
-        // CASE 3: Everything else --> 1 handle for this property
-        if (key === "$ref") {
-            handleIds.push({ handleId: `${nodeId}`, position: Position.Right });
-        }
+    // CASE 1: Array --> generate 1 handle per element
+    if (Array.isArray(keywordValue)) {
+        return keywordValue.map((eachValue) => ({
+            handleId: `${nodeId}-${eachValue}`,
+            position: Position.Right
+        }))
     }
 
-    return handleIds;
+    // CASE 2: Numeric or numeric string
+    const numeric = Number(keywordValue);
+    if (!Number.isNaN(numeric) && numeric > 0) {
+        return Array.from({ length: numeric }).map((_, i) => ({
+            handleId: `${nodeId}-${i}`,
+            position: Position.Right,
+        }));
+    }
+
+    // CASE 3: Everything else --> 1 handle for this property
+    return [{
+        handleId: `${nodeId}`,
+        position: Position.Right
+    }];
 }
 
 const updateNodeProperties = (nodes, nodeId, handleId, position) => {
@@ -167,7 +154,7 @@ const getKeywordHandler: GetKeywordHandler = (handlerName) => {
 
 const createBasicKeywordHandler: CreateBasicKeywordHandler = (key) => {
     return (_ast, keywordValue, _nodes, _edges, _parentId) => {
-        return { key, value: keywordValue, LeafNode: true }
+        return { key, value: keywordValue, leafNode: true }
     }
 }
 

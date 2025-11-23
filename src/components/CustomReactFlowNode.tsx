@@ -1,4 +1,4 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle } from "@xyflow/react";
 import {
   useCallback,
   useEffect,
@@ -60,17 +60,13 @@ const ROW_HEIGHT = 20; // px
 const AVAILABLE_HEIGHT = NODE_HEIGHT - 16;
 
 const CustomNode = ({
-  id,
   data,
 }: {
-  id: string;
   data: {
     id: string;
     label: string;
     type: string;
     nodeData: Record<string, unknown>;
-    isLeafNode?: boolean;
-    containsDefinition: boolean;
     targetHandles: string[];
     sourceHandles: string[];
   };
@@ -117,14 +113,6 @@ const CustomNode = ({
       className={`relative p-3 rounded-sm shadow-sm w-[200px] h-[${NODE_HEIGHT}px]`}
       style={nodeStyle}
     >
-      {data.containsDefinition && (
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          id={`${id}-definitions`}
-        />
-      )}
-
       {data.targetHandles.map(({ handleId, position }) => (
         <Handle
           key={handleId}
@@ -140,7 +128,7 @@ const CustomNode = ({
           type="source"
           position={position}
           id={handleId}
-          style={{ top: 10 + i * 10 }}
+          style={position === "bottom" ? {} : { top: 10 + i * 10 }}
         />
       ))}
 
