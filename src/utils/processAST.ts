@@ -45,7 +45,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
                 sourceHandle: sourceHandle,
                 targetHandle: targetHandle
             });
-            updateNodeProperties(nodes, schemaUri, targetHandle, Position.Top);
+            updateNodeHandles(nodes, schemaUri, targetHandle, Position.Top);
         }
         return;
     }
@@ -75,7 +75,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
             }
         }
     }
-
+    
     nodes.push({
         id: schemaUri,
         type: "customNode",
@@ -92,7 +92,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
             sourceHandle: sourceHandle,
             targetHandle: targetHandle
         });
-        updateNodeProperties(nodes, schemaUri, targetHandle, Position.Left)
+        updateNodeHandles(nodes, schemaUri, targetHandle, Position.Left)
     }
     // return { nodes, edges };
 
@@ -134,7 +134,7 @@ const generateSourceHandles = (keywordValue, nodeId, defs) => {
     }];
 }
 
-const updateNodeProperties = (nodes, nodeId, handleId, position) => {
+const updateNodeHandles = (nodes, nodeId, handleId, position) => {
     const node = nodes.find(n => n.id === nodeId);
     if (!node) {
         // throw new Error(`Node with id ${nodeId} not found`);
