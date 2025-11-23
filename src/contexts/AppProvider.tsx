@@ -10,11 +10,10 @@ import { AppContext } from "./AppContext";
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [theme, setTheme] = useState("light");
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  };
+  //detect the system theme
+  const [theme, setTheme] = useState<"light" | "dark">(() => 
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+  );
 
   const toggleFullScreen = useCallback(() => {
     const el = containerRef.current;
@@ -44,9 +43,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  //listen the system theme change
+  useEffect(() => {
+    const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleThemeChange = (e : MediaQueryListEvent) => {
+      setTheme(e.matches ? "dark" : "light");
+    }
+    isDarkTheme.addEventListener("change" , handleThemeChange);
+    return isDarkTheme.removeEventListener("change", handleThemeChange);
+  }, [])
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === "dark" ? "light" : "dark");
+  }
 
   const value = {
     containerRef,
