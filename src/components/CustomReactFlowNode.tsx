@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import { inferSchemaType } from "../utils/inferSchemaType";
+import type { HandleConfig } from "../utils/processAST";
 
 const nodeStyles: {
   [key: string]: Record<string, { [key: string]: string }>;
@@ -67,8 +68,8 @@ const CustomNode = ({
     label: string;
     type: string;
     nodeData: Record<string, unknown>;
-    targetHandles: string[];
-    sourceHandles: string[];
+    targetHandles: HandleConfig[];
+    sourceHandles: HandleConfig[];
   };
 }) => {
   const [isOverflowing, setIsOverflowing] = useState(false);
