@@ -58,7 +58,14 @@ const GraphView = ({
       if (!compiledSchema) return;
       const { ast, schemaUri } = compiledSchema;
       // console.log(ast)
-      processAST({ ast: sortAST(ast), schemaUri, nodes, edges, parentId: "" });
+      processAST({
+        ast: sortAST(ast),
+        schemaUri,
+        nodes,
+        edges,
+        parentId: "root",
+        nodeTitle: "root",
+      });
 
       return { nodes, edges };
     },

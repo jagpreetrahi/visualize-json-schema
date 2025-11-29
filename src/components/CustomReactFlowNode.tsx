@@ -4,7 +4,6 @@ import { inferSchemaType } from "../utils/inferSchemaType";
 import type { HandleConfig } from "../utils/processAST";
 
 type NodeData = {
-  id: string;
   label: string;
   type: string;
   nodeData: Record<string, unknown>;
@@ -51,7 +50,7 @@ const CustomNode = ({ data }: { data: NodeData }) => {
       ))}
 
       <div
-        className="pl-1 font-semibold"
+        className="px-1 font-semibold"
         style={{
           background: `${color}50`,
           borderBottom: `1px solid ${color}`,
