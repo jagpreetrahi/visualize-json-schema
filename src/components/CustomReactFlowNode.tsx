@@ -107,7 +107,6 @@ const CustomNode = ({ data }: { data: NodeData }) => {
           type="source"
           position={position}
           id={handleId}
-          style={{}}
         />
       ))}
     </div>
