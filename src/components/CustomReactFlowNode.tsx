@@ -36,8 +36,9 @@ const CustomNode = ({ data }: { data: NodeData }) => {
     <div
       className="relative rounded transition-shadow duration-300 bg-black text-white min-w-[100px] max-w-[400px] hover:shadow-[0_0_10px_var(--color)]"
       style={{
-        "--color": color,
+        ["--color" as string]: color,
         border: `1px solid ${color}`,
+        wordBreak: "break-word",
       }}
     >
       {data.targetHandles.map(({ handleId, position }) => (
@@ -50,7 +51,7 @@ const CustomNode = ({ data }: { data: NodeData }) => {
       ))}
 
       <div
-        className="pl-2 font-semibold py-1"
+        className="pl-1 font-semibold"
         style={{
           background: `${color}50`,
           borderBottom: `1px solid ${color}`,
@@ -60,7 +61,7 @@ const CustomNode = ({ data }: { data: NodeData }) => {
         {data.label}
       </div>
 
-      <div className="flex text-sm flex-col gap-">
+      <div className="flex text-sm flex-col">
         {Object.entries(data.nodeData).map(([key, value]) => {
           const isArray = Array.isArray(value);
 

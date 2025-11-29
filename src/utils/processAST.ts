@@ -100,7 +100,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: "", type: schemaType, nodeData, sourceHandles, targetHandles }
+        data: { label: "sdds", type: schemaType, nodeData, sourceHandles, targetHandles }
     });
 
     if (parentId) {
@@ -206,7 +206,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "$defs", value: value.length }
+        return { key: "$defs", value: Array.from({ length: value.length }, (_, i) => i + 1) }
     },
 
     // Applicator
@@ -215,21 +215,21 @@ const keywordHandlerMap: KeywordHandlerMap = {
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "allOf", value: value.length }
+        return { key: "allOf", value: Array.from({ length: value.length }, (_, i) => i + 1) }
     },
     "https://json-schema.org/keyword/anyOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         const value = keywordValue as string[];
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "anyOf", value: value.length }
+        return { key: "anyOf", value: Array.from({ length: value.length }, (_, i) => i + 1) }
     },
     "https://json-schema.org/keyword/oneOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         const value = keywordValue as string[];
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "oneOf", value: value.length }
+        return { key: "oneOf", value: Array.from({ length: value.length }, (_, i) => i + 1) }
     },
     "https://json-schema.org/keyword/if": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         const value = keywordValue as string;
@@ -264,7 +264,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
         for (const [index, item] of value.entries()) {
             processAST(ast, item[1], nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "patternProperties", value: value.length }
+        return { key: "patternProperties", value: Array.from({ length: value.length }, (_, i) => i + 1) }
     },
     // "https://json-schema.org/keyword/dependentSchemas": createBasicKeywordHandler("dependentSchemas"),
     "https://json-schema.org/keyword/contains": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
@@ -283,7 +283,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "prefixItems", value: value.length }
+        return { key: "prefixItems", value: Array.from({ length: value.length }, (_, i) => i + 1) }
     },
     "https://json-schema.org/keyword/not": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         processAST(ast, keywordValue as string, nodes, edges, parentId, renderedNodes);
