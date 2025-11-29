@@ -168,11 +168,21 @@ const updateNodeHandles: UpdateNodeHandles = (nodes, nodeId, handleId, position)
 
 const getKeywordHandler: GetKeywordHandler = (handlerName) => {
     if (!(handlerName in keywordHandlerMap)) {
-        throw Error(`No handler found for Keyword: ${handlerName}`);
+        // throw Error(`No handler found for Keyword: ${handlerName}`);
+        return fallbackHandler(handlerName);
     }
     return keywordHandlerMap[handlerName];
 }
 
+const fallbackHandler: GetKeywordHandler = (handlerName)  => {
+    const keyword = handlerName.split('/').pop();
+    console.warn(`⚠️ Keyword handler for "${keyword}" is not implemented yet.`);
+    
+    return (_ast, _keywordValue, _nodes, _edges, _parentId) => {
+        return { key: keyword, value: `⚠️  This keyword handler is not implemented yet!`, leafNode: true }
+    }
+  };
+  
 const createBasicKeywordHandler: CreateBasicKeywordHandler = (key) => {
     return (_ast, keywordValue, _nodes, _edges, _parentId) => {
         return { key, value: keywordValue, leafNode: true }
