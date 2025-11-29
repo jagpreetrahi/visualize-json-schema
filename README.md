@@ -1,4 +1,4 @@
-![JSON Schema logo - Build more, break less, empower others.](https://raw.githubusercontent.com/json-schema-org/.github/main/assets/json-schema-banner.png)
+![JSON Schema logo - Build more, break less, empower others.](public/logo.png)
 
 # 👋 Welcome to the JSON Schema Visualization Tool
 
@@ -8,10 +8,30 @@ This repository contains the source code of the JSON Schema Visualization Tool:
 
 * Powered by React with TypeScript,
 * It Uses -
-    * CytoScape.js Library - For Visualize the JSON Schema in graphical representation.
+    * React Flow Library - For Visualize the JSON Schema in graphical representation.
     * Hyperjump JSON Schema - For validating the JSON Schema correctly.
     * Monaco Editor - For view and edit the JSON Schema in real-time.
-    * CytoScape.js plugin - For visualize the nodes in html elements
+
+## Project structure
+
+This repository has the following structure:
+
+<!-- If you make any changes in the project structure, remember to update it. -->
+
+```text
+  ├── .github                     # Definitions of GitHub workflows
+  ├── src                         # Starting folder for project
+  |   ├── components                  # Various main components such as "GraphView", "MonacoEditor", etc.
+  |   ├── data                        # Default JSON Schema data
+  |   ├── context                     # Contains the  context for theme and visualization.
+  |   ├── styles                      # Various CSS files
+  |   ├── utils                       #  Helper funtions for Schema.
+  ├── public                       # Data for site metadata and static assets such as images.
+  ├── Dockerfile                   # Contains the steps for building a docker image.
+  ├── tsconfig.json                # typescript configuration.
+ 
+```    
+    
 
 ## Future Enhancements
 
@@ -19,8 +39,6 @@ Our Commitment
 
 We are dedicated to making this tool more accessible and intuitive—bridging the gaps and helping users understand JSON Schema effortlessly. With that vision, we are planning several future enhancements, including:
 
-- Support for downloading the visualized graph as an image.
-- Functionality to upload a JSON file directly for schema visualization.
 - Development of a VS Code extension for in-editor schema visualization.
 - Additional features focused on improving usability and the overall developer experience.
 
