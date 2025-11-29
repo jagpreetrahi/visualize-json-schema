@@ -51,6 +51,7 @@ type KeywordHandler = (...args: KeywordHandlerContext) => { key?: string, value?
 type GetKeywordHandler = (handlerName: string) => KeywordHandler;
 type KeywordHandlerMap = Record<string, KeywordHandler>;
 type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
+type GetArrayFromNumber = (number: number) => number[];
 type GetSourceHandle = (hasDefs: unknown, parentId: string) => string;
 type GenerateSourceHandles = (keywordValue: unknown, nodeId: string, defs: boolean | undefined) => HandleConfig[];
 type UpdateNodeHandles = (nodes: GraphNode[], schemaUri: string, targethandle: string, position: Position) => void;
@@ -100,7 +101,7 @@ export const processAST: ProcessAST = (ast, schemaUri, nodes, edges, parentId, r
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: "sdds", type: schemaType, nodeData, sourceHandles, targetHandles }
+        data: { label: "", type: schemaType, nodeData, sourceHandles, targetHandles }
     });
 
     if (parentId) {
@@ -139,16 +140,7 @@ const generateSourceHandles: GenerateSourceHandles = (keywordValue, nodeId, defs
         }))
     }
 
-    // CASE 2: Numeric or numeric string
-    const numeric = Number(keywordValue);
-    if (!Number.isNaN(numeric) && numeric > 0) {
-        return Array.from({ length: numeric }).map((_, i) => ({
-            handleId: `${nodeId}-${i}`,
-            position: Position.Right,
-        }));
-    }
-
-    // CASE 3: Everything else --> 1 handle for this property
+    // CASE 2: Everything else --> 1 handle for this property
     return [{
         handleId: `${nodeId}`,
         position: Position.Right
@@ -179,13 +171,16 @@ const createBasicKeywordHandler: CreateBasicKeywordHandler = (key) => {
     }
 }
 
+const getArrayFromNumber: GetArrayFromNumber = (number) => (
+    Array.from({ length: number }, (_, i) => i)
+);
+
 const keywordHandlerMap: KeywordHandlerMap = {
 
     // Core
     // "https://json-schema.org/keyword/dynamicRef": createBasicKeywordHandler("$dynamicRef"),
     // "https://json-schema.org/keyword/draft-2020-12/dynamicRef": createBasicKeywordHandler("$dynamicRef"),
     "https://json-schema.org/keyword/ref": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
-        // if (typeof keywordValue !== "string") return;
         processAST(ast, keywordValue as string, nodes, edges, parentId, renderedNodes);
         return { key: "$ref", value: keywordValue }
     },
@@ -206,7 +201,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "$defs", value: Array.from({ length: value.length }, (_, i) => i + 1) }
+        return { key: "$defs", value: getArrayFromNumber(value.length) }
     },
 
     // Applicator
@@ -215,21 +210,21 @@ const keywordHandlerMap: KeywordHandlerMap = {
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "allOf", value: Array.from({ length: value.length }, (_, i) => i + 1) }
+        return { key: "allOf", value: getArrayFromNumber(value.length) }
     },
     "https://json-schema.org/keyword/anyOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         const value = keywordValue as string[];
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "anyOf", value: Array.from({ length: value.length }, (_, i) => i + 1) }
+        return { key: "anyOf", value: getArrayFromNumber(value.length) }
     },
     "https://json-schema.org/keyword/oneOf": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         const value = keywordValue as string[];
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "oneOf", value: Array.from({ length: value.length }, (_, i) => i + 1) }
+        return { key: "oneOf", value: getArrayFromNumber(value.length) }
     },
     "https://json-schema.org/keyword/if": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         const value = keywordValue as string;
@@ -264,7 +259,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
         for (const [index, item] of value.entries()) {
             processAST(ast, item[1], nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "patternProperties", value: Array.from({ length: value.length }, (_, i) => i + 1) }
+        return { key: "patternProperties", value: getArrayFromNumber(value.length) }
     },
     // "https://json-schema.org/keyword/dependentSchemas": createBasicKeywordHandler("dependentSchemas"),
     "https://json-schema.org/keyword/contains": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
@@ -283,7 +278,7 @@ const keywordHandlerMap: KeywordHandlerMap = {
         for (const [index, item] of value.entries()) {
             processAST(ast, item, nodes, edges, parentId, renderedNodes, index);
         }
-        return { key: "prefixItems", value: Array.from({ length: value.length }, (_, i) => i + 1) }
+        return { key: "prefixItems", value: getArrayFromNumber(value.length) }
     },
     "https://json-schema.org/keyword/not": (ast, keywordValue, nodes, edges, parentId, renderedNodes) => {
         processAST(ast, keywordValue as string, nodes, edges, parentId, renderedNodes);
