@@ -4,7 +4,15 @@ import type { RFNodeData } from "../utils/processAST";
 const CustomNode = ({ data }: { data: RFNodeData }) => {
   return (
     <div
-      className="relative rounded transition-shadow duration-300 text-sm bg-black text-white min-w-[100px] max-w-[400px] hover:shadow-[0_0_10px_var(--color)]"
+      className={`
+        ${
+          data.isBooleanNode
+            ? "rounded-2xl text-center overflow-hidden"
+            : "rounded"
+        }
+        relative transition-shadow duration-300 text-sm bg-black text-white
+        min-w-[100px] max-w-[400px] hover:shadow-[0_0_10px_var(--color)]
+      `}
       style={{
         ["--color" as string]: data.nodeStyle.color,
         border: `1px solid ${data.nodeStyle.color}`,
@@ -38,17 +46,20 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
           return (
             <div
               key={key}
-              className="flex"
+              className={`${data.isBooleanNode && "text-center"}`}
               style={{
                 border: `1px solid ${data.nodeStyle.color}40`,
                 padding: "4px",
+                background: data.isBooleanNode
+                  ? `${data.nodeStyle.color}50`
+                  : "",
               }}
             >
               <span
                 className="font-semibold mr-2 whitespace-nowrap"
                 style={{ color: "#00B7FF" }}
               >
-                {key !== "booleanSchema" && `${key}:`}
+                {!data.isBooleanNode && `${key}:`}
               </span>
 
               {isArray ? (

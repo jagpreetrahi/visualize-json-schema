@@ -11,6 +11,7 @@ export type GraphNode = {
 
 export type RFNodeData = {
     nodeLabel: string,
+    isBooleanNode: boolean,
     nodeData: Record<string, unknown>,
     nodeStyle: NodeStyle,
     sourceHandles: HandleConfig[],
@@ -66,13 +67,16 @@ type UpdateNodeHandles = (nodes: GraphNode[], schemaUri: string, targethandle: s
 
 
 const neonColors = {
-    string: "#00E5FF",
-    number: "#12FF4B",
-    boolean: "#A259FF",
-    array: "#FFEA00",
-    object: "#FF3B3B",
-    null: "#FF9CEE",
-    others: "#CCCCCC",
+    string: "#FF6EFF", // neon magenta
+    number: "#00FF95", // neon mint
+    boolean: "#FFEA00", // neon yellow
+    array: "#FF8F00", // neon amber
+    object: "#00E5FF", // neon cyan
+    null: "#A259FF", // neon purple
+    booleanSchemaTrue: "#12FF4B", // neon green
+    booleanSchemaFalse: "#FF3B3B", // neon red 
+    reference: "#FFE1BD", // soft neon cream
+    others: "#CCCCCC", // soft gray
 };
 
 export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId, childId, renderedNodes = [], nodeTitle }) => {
@@ -94,11 +98,13 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
     const nodeData: Record<string, unknown> = {};
     const sourceHandles: HandleConfig[] = [];
     const targetHandles: HandleConfig[] = [];
+    let isBooleanSchema: boolean = false;
 
     renderedNodes.push(schemaUri);
 
     if (typeof schemaNodes === "boolean") {
         nodeData["booleanSchema"] = schemaNodes;
+        isBooleanSchema = true;
     } else {
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             const handler = getKeywordHandler(toAbsoluteIri(keywordHandlerName));
@@ -125,7 +131,7 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { nodeLabel: nodeTitle, nodeData, nodeStyle: { color: color }, sourceHandles, targetHandles }
+        data: { nodeLabel: nodeTitle, isBooleanNode: isBooleanSchema, nodeData, nodeStyle: { color: color }, sourceHandles, targetHandles }
     });
 
     const sourceHandle = getSourceHandle(parentId, childId);
