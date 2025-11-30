@@ -29,7 +29,7 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
       ))}
 
       <div
-        className="px-1 font-semibold"
+        className="px-2 font-semibold"
         style={{
           background: `${data.nodeStyle.color}50`,
           borderBottom: `1px solid ${data.nodeStyle.color}`,
@@ -46,7 +46,7 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
           return (
             <div
               key={key}
-              className={`${data.isBooleanNode && "text-center"}`}
+              className={`${data.isBooleanNode && "text-center"} flex`}
               style={{
                 border: `1px solid ${data.nodeStyle.color}40`,
                 padding: "4px",
