@@ -1,7 +1,11 @@
 import { Handle } from "@xyflow/react";
 import type { RFNodeData } from "../utils/processAST";
+import { useContext } from "react";
+import { AppContext } from "../contexts/AppContext";
 
 const CustomNode = ({ data }: { data: RFNodeData }) => {
+  const { theme } = useContext(AppContext);
+
   return (
     <div
       className={`
@@ -10,12 +14,15 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
             ? "rounded-2xl text-center overflow-hidden"
             : "rounded"
         }
-        relative transition-shadow duration-300 text-sm bg-black text-white
+        relative transition-shadow duration-300 text-sm bg-[var(--node-bg-color)] text-[var(--text-color)]
         min-w-[100px] max-w-[400px] hover:shadow-[0_0_10px_var(--color)]
       `}
       style={{
         ["--color" as string]: data.nodeStyle.color,
-        border: `1px solid ${data.nodeStyle.color}`,
+        border:
+          theme === "dark"
+            ? `1px solid ${data.nodeStyle.color}`
+            : `1px solid color-mix(in srgb, ${data.nodeStyle.color} 80%, black)`,
         wordBreak: "break-word",
       }}
     >
@@ -33,7 +40,10 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
         style={{
           background: `${data.nodeStyle.color}50`,
           borderBottom: `1px solid ${data.nodeStyle.color}`,
-          color: data.nodeStyle.color,
+          color:
+            theme === "dark"
+              ? data.nodeStyle.color
+              : `color-mix(in srgb, ${data.nodeStyle.color} 60%, black)`,
         }}
       >
         {data.nodeLabel}
@@ -55,10 +65,7 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
                   : "",
               }}
             >
-              <span
-                className="font-semibold mr-2 whitespace-nowrap"
-                style={{ color: "#00B7FF" }}
-              >
+              <span className="font-semibold mr-2 whitespace-nowrap text-[var(--node-key-color)]">
                 {!data.isBooleanNode && `${key}:`}
               </span>
 
@@ -67,7 +74,7 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
                   {(value as string[]).map((item, index) => (
                     <div
                       key={index}
-                      className="px-2 py-[2px] bg-[#1a1a1a]"
+                      className="px-2 py-[2px] bg-[var(--node-value-bg-color)]"
                       style={{ border: `1px solid ${data.nodeStyle.color}30` }}
                     >
                       {item}

@@ -1,30 +1,36 @@
-/*light theme */ 
+/*light theme */
 [data-theme="light"] {
-    /* Backgrounds */
-    --bg-color: #ffffff; 
-    --visualize-bg-color: #ffffff; 
-    --visualize-bg-image: rgba(107, 114, 128, 0.1); 
-    --bottom-bg-color: #3d85c6; 
-    --view-bg-color: #eeeeee; 
-    --control-bg-color: #6b7280; 
-    --validation-bg-color: #eeeeee; 
-    --pillar-bg-color: #b0b0b0;
-    --validation-heading-color: #999999;
-    
-    /* Text color*/
-    --text-color: #111111;
-    --bottom-text-color: #ffffff;
-    --tool-name-color: #1e3a8a;           
-    --tool-content-color: #6b7280;        
-    --navigation-text-color: #6b7280;
-    -view-option-text-color: #444444;
-    --view-text-color: #6b7280;           
-    --validation-text-color: #444444;     
+  /* Backgrounds */
+  --bg-color: #ffffff;
+  --node-bg-color: #ffffff;
+  --node-key-color: #00b7ff;
+  --node-value-bg-color: #f5f5f5;
+  --visualize-bg-color: #ffffff;
+  --visualize-bg-image: rgba(107, 114, 128, 0.1);
+  --bottom-bg-color: #3d85c6;
+  --view-bg-color: #eeeeee;
+  --control-bg-color: #6b7280;
+  --validation-bg-color: #eeeeee;
+  --pillar-bg-color: #b0b0b0;
+  --validation-heading-color: #999999;
+
+  /* Text color*/
+  --text-color: #111111;
+  --bottom-text-color: #ffffff;
+  --tool-name-color: #1e3a8a;
+  --tool-content-color: #6b7280;
+  --navigation-text-color: #6b7280;
+  --view-option-text-color: #444444;
+  --view-text-color: #6b7280;
+  --validation-text-color: #444444;
 }
 
 [data-theme="dark"] {
- /* Backgrounds */
-  --bg-color: 	#3d3d3d;
+  /* Backgrounds */
+  --bg-color: #3d3d3d;
+  --node-bg-color: black;
+  --node-key-color: #00b7ff;
+  --node-value-bg-color: #1a1a1a;
   --editor-bg-color: #1e1e1e;
   --visualize-bg-color: #1a1a1a;
   --visualize-bg-image: rgba(255, 255, 255, 0.05);
@@ -38,8 +44,8 @@
   /* Text color */
   --text-color: #f0f0f0;
   --bottom-text-color: #ffffff;
-  --tool-name-color: #fff; 
-  --tool-content-color: #fff; 
+  --tool-name-color: #fff;
+  --tool-content-color: #fff;
   --navigation-text-color: #ffffff;
   --view-text-color: #fff;
   --validation-text-color: #fff;
