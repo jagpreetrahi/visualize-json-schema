@@ -9,6 +9,7 @@ import {
   useNodesState,
   useEdgesState,
   Position,
+  BackgroundVariant,
   type Node,
   type Edge,
   type NodeMouseHandler,
@@ -139,7 +140,20 @@ const GraphView = ({
         nodeTypes={nodeTypes}
         fitView
       >
-        <Background />
+        <Background
+          id="main-grid"
+          variant={BackgroundVariant.Lines}
+          lineWidth={0.05}
+          gap={100}
+          color="#f1f1f1"
+        />
+        <Background
+          id="sub-grid"
+          variant={BackgroundVariant.Lines}
+          lineWidth={0.02}
+          gap={20}
+          color="#ccc"
+        />
         <Controls />
       </ReactFlow>
 
