@@ -109,8 +109,11 @@ const MonacoEditor = () => {
             </div>
           )}
         </Panel>
-        <PanelResizeHandle className="panel-resize-handle" />
-        <Panel minSize={60} className="flex flex-col relative bg-[var(--visualize-bg-color)]">
+        <PanelResizeHandle className="w-[1px] bg-gray-400" />
+        <Panel
+          minSize={60}
+          className="flex flex-col relative bg-[var(--visualize-bg-color)]"
+        >
           <SchemaVisualization compiledSchema={compiledSchema} />
         </Panel>
       </PanelGroup>

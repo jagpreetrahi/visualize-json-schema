@@ -145,14 +145,14 @@ const GraphView = ({
           variant={BackgroundVariant.Lines}
           lineWidth={0.05}
           gap={100}
-          color="#f1f1f1"
+          color="var(--reactflow-bg-main-pattern-color)"
         />
         <Background
           id="sub-grid"
           variant={BackgroundVariant.Lines}
           lineWidth={0.02}
           gap={20}
-          color="#ccc"
+          color="var(--reactflow-bg-sub-pattern-color)"
         />
         <Controls />
       </ReactFlow>

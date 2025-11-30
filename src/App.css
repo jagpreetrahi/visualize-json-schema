@@ -9,10 +9,3 @@ body{
     linear-gradient(to bottom, var(--visualize-bg-image) 0.1px, transparent 1px);
   background-size: 30px 30px;
 }
-
-.panel-resize-handle {
-  width: 5px;
-  /* background-color: var(--pillar-bg-color); */
-  background-color: var(--pillar-bg-color);
-  cursor: col-resize;
-}
