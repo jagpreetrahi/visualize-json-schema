@@ -39,15 +39,24 @@ export const inferSchemaType = (nodeData: GraphNode["data"]["nodeData"]): [strin
         "multipleOf",
     ]);
 
+    const refKeyword = new Set([
+        "$ref"
+    ]);
+
     const hasAnyKeyword = (keywords: Set<string>) => {
         return [...keywords].some((key) => key in nodeData);
     }
 
-    if ("booleanSchema" in nodeData) return ["booleanSchema", nodeData["booleanSchema"] as string];
+    const getBooleanSchemaValue = (value: string): string => {
+        return value ? "booleanSchemaTrue" : "booleanSchemaFalse";
+    }
+
+    if ("booleanSchema" in nodeData) return ["booleanSchema", getBooleanSchemaValue(nodeData["booleanSchema"] as string)];
     if (hasAnyKeyword(objectKeywords)) return ["objectSchema", "object"];
     if (hasAnyKeyword(arrayKeywords)) return ["objectSchema", "array"];
     if (hasAnyKeyword(stringKeywords)) return ["objectSchema", "string"];
     if (hasAnyKeyword(numberKeywords)) return ["objectSchema", "number"];
+    if (hasAnyKeyword(refKeyword)) return ["objectSchema", "reference"];
 
     return ["objectSchema", "others"];
 };
