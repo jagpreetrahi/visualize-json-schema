@@ -86,7 +86,7 @@ const MonacoEditor = () => {
         </div>
       )}
       <PanelGroup direction="horizontal">
-        <Panel className="flex flex-col" minSize={10} defaultSize={35}>
+        <Panel className="flex flex-col" minSize={10} defaultSize={25}>
           <Editor
             height="90%"
             width="100%"

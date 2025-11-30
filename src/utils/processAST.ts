@@ -1,18 +1,25 @@
-import type { AST } from "@hyperjump/json-schema/experimental";
+import type { AST, Node } from "@hyperjump/json-schema/experimental";
 import { toAbsoluteIri } from "@hyperjump/uri";
 import { Position } from "@xyflow/react";
+import { inferSchemaType } from "./inferSchemaType";
 
 export type GraphNode = {
     id: string;
     type: string;
-    data: {
-        label: string,
-        type?: string,
-        nodeData: Record<string, unknown>,
-        sourceHandles: HandleConfig[],
-        targetHandles: HandleConfig[]
-    };
+    data: RFNodeData;
 };
+
+export type RFNodeData = {
+    nodeLabel: string,
+    nodeData: Record<string, unknown>,
+    nodeStyle: NodeStyle,
+    sourceHandles: HandleConfig[],
+    targetHandles: HandleConfig[]
+}
+
+type NodeStyle = {
+    color: string
+}
 
 export type GraphEdge = {
     id: string;
@@ -57,6 +64,17 @@ type GetSourceHandle = (parentId: string, childId?: string) => string;
 type GenerateSourceHandles = (keywordValue: unknown, nodeId: string, defs: boolean | undefined) => HandleConfig[];
 type UpdateNodeHandles = (nodes: GraphNode[], schemaUri: string, targethandle: string, position: Position) => void;
 
+
+const neonColors = {
+    string: "#00E5FF",
+    number: "#12FF4B",
+    boolean: "#A259FF",
+    array: "#FFEA00",
+    object: "#FF3B3B",
+    null: "#FF9CEE",
+    others: "#CCCCCC",
+};
+
 export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId, childId, renderedNodes = [], nodeTitle }) => {
     if (renderedNodes.includes(schemaUri)) {
         const sourceHandle = getSourceHandle(parentId, childId);
@@ -72,8 +90,7 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
         return;
     }
 
-    let schemaType: string | undefined;
-    const schemaNodes = ast[schemaUri];
+    const schemaNodes: boolean | Node<unknown>[] = ast[schemaUri];
     const nodeData: Record<string, unknown> = {};
     const sourceHandles: HandleConfig[] = [];
     const targetHandles: HandleConfig[] = [];
@@ -89,7 +106,6 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
 
             if (key) {
                 nodeData[key] = value;
-                if (key === "type") schemaType = value as string;
             }
             if (!leafNode) {
                 sourceHandles.push(...generateSourceHandles(value, schemaUri, defs));
@@ -97,10 +113,19 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
         }
     }
 
+    const getColor = (nodeData: Record<string, unknown>) => {
+        const [, definedFor] = inferSchemaType(nodeData);
+        return (
+            neonColors[definedFor as keyof typeof neonColors] ?? neonColors.others
+        );
+    };
+
+    const color = getColor(nodeData);
+
     nodes.push({
         id: schemaUri,
         type: "customNode",
-        data: { label: nodeTitle, type: schemaType, nodeData, sourceHandles, targetHandles }
+        data: { nodeLabel: nodeTitle, nodeData, nodeStyle: { color: color }, sourceHandles, targetHandles }
     });
 
     const sourceHandle = getSourceHandle(parentId, childId);
