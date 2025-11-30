@@ -5,7 +5,7 @@ type AppContextType = {
   isFullScreen: boolean;
   toggleFullScreen: () => void;
 
-  theme: string;
+  theme: "light" | "dark";
   toggleTheme: () => void;
 };
 

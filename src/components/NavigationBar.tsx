@@ -1,12 +1,11 @@
-import { BsBrightnessHigh } from "react-icons/bs";
-import { FaGithub, FaSearch } from "react-icons/fa";
+import { BsGithub, BsMoonStars, BsSearch, BsSun } from "react-icons/bs";
 import { useContext } from "react";
 import { Tooltip } from "react-tooltip";
 import { AppContext } from "../contexts/AppContext";
 import FullscreenToggleButton from "./FullscreenToggleButton";
 
 const NavigationBar = () => {
-  const { toggleTheme } = useContext(AppContext);
+  const { theme, toggleTheme } = useContext(AppContext);
 
   return (
     <nav className="h-[10vh] flex justify-between items-center shadow-lg relative z-10">
@@ -28,9 +27,11 @@ const NavigationBar = () => {
             className="text-xl cursor-pointer"
             onClick={toggleTheme}
           >
-            <BsBrightnessHigh
-              style={{ color: "var(--navigation-text-color)" }}
-            />
+            {theme === "light" ? (
+              <BsSun className="text-[var(--navigation-text-color)]" />
+            ) : (
+              <BsMoonStars className="text-[var(--navigation-text-color)]" />
+            )}
           </button>
         </li>
         <li>
@@ -42,7 +43,7 @@ const NavigationBar = () => {
             data-tooltip-id="github"
             data-tooltip-content="Star on Github"
           >
-            <FaGithub style={{ color: "var(--navigation-text-color)" }} />
+            <BsGithub className="text-[var(--navigation-text-color)]" />
             <Tooltip id="github" />
           </a>
         </li>
@@ -55,7 +56,7 @@ const NavigationBar = () => {
             data-tooltip-id="learn-keywords"
             data-tooltip-content="Explore Keywords"
           >
-            <FaSearch style={{ color: "var(--navigation-text-color)" }} />
+            <BsSearch className="text-[var(--navigation-text-color)]" />
             <Tooltip id="learn-keywords" />
           </a>
         </li>
