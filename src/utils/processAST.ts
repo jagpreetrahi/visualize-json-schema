@@ -13,7 +13,7 @@ export type RFNodeData = {
     nodeLabel: string,
     isBooleanNode: boolean,
     nodeData: Record<string, unknown>,
-    nodeStyle: NodeStyle,
+    nodeStyle: Partial<NodeStyle>,
     sourceHandles: HandleConfig[],
     targetHandles: HandleConfig[]
 }
@@ -55,6 +55,12 @@ export type HandleConfig = {
     position: Position;
 }
 
+type UpdateNodeOptionalParameters = Partial<{
+    nodeData: Record<string, unknown>,
+    nodeStyle: NodeStyle,
+    addTargetHandle: HandleConfig
+}>
+
 type ProcessAST = (params: ProcessASTParams) => void;
 type KeywordHandler = (...args: KeywordHandlerParams) => { key?: string, value?: unknown, leafNode?: boolean, defs?: boolean };
 type GetKeywordHandler = (handlerName: string) => KeywordHandler;
@@ -63,7 +69,7 @@ type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
 type GetArrayFromNumber = (number: number) => number[];
 type GetSourceHandle = (parentId: string, childId?: string) => string;
 type GenerateSourceHandles = (keywordValue: unknown, nodeId: string, defs: boolean | undefined) => HandleConfig[];
-type UpdateNodeHandles = (nodes: GraphNode[], schemaUri: string, targethandle: string, position: Position) => void;
+type UpdateNode = (nodes: GraphNode[], schemaUri: string, update: UpdateNodeOptionalParameters) => void;
 
 
 const neonColors = {
@@ -90,7 +96,11 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
             sourceHandle: sourceHandle,
             targetHandle: targetHandle
         });
-        updateNodeHandles(nodes, schemaUri, targetHandle, Position.Top);
+        updateNode(
+            nodes,
+            schemaUri,
+            { addTargetHandle: { handleId: targetHandle, position: Position.Top } }
+        );
         return;
     }
 
@@ -98,13 +108,23 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
     const nodeData: Record<string, unknown> = {};
     const sourceHandles: HandleConfig[] = [];
     const targetHandles: HandleConfig[] = [];
-    let isBooleanSchema: boolean = false;
 
     renderedNodes.push(schemaUri);
+    nodes.push({
+        id: schemaUri,
+        type: "customNode",
+        data: {
+            nodeLabel: nodeTitle,
+            isBooleanNode: (typeof schemaNodes === "boolean"),
+            nodeData: {},
+            nodeStyle: {},
+            sourceHandles,
+            targetHandles
+        }
+    });
 
     if (typeof schemaNodes === "boolean") {
         nodeData["booleanSchema"] = schemaNodes;
-        isBooleanSchema = true;
     } else {
         for (const [keywordHandlerName, , keywordValue] of schemaNodes) {
             const handler = getKeywordHandler(toAbsoluteIri(keywordHandlerName));
@@ -127,15 +147,9 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
     };
 
     const color = getColor(nodeData);
-
-    nodes.push({
-        id: schemaUri,
-        type: "customNode",
-        data: { nodeLabel: nodeTitle, isBooleanNode: isBooleanSchema, nodeData, nodeStyle: { color: color }, sourceHandles, targetHandles }
-    });
-
     const sourceHandle = getSourceHandle(parentId, childId);
     const targetHandle = `${getSourceHandle(parentId, childId)}-target`;
+
     edges.push({
         id: `${parentId}-${schemaUri}`,
         source: parentId,
@@ -143,9 +157,12 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
         sourceHandle: sourceHandle,
         targetHandle: targetHandle
     });
-    if (parentId !== "root") updateNodeHandles(nodes, schemaUri, targetHandle, Position.Left)
-    // return { nodes, edges };
 
+    updateNode(
+        nodes,
+        schemaUri,
+        { nodeData, nodeStyle: { color: color }, addTargetHandle: { handleId: targetHandle, position: Position.Left } }
+    );
 };
 
 const getSourceHandle: GetSourceHandle = (parentId, childId) => {
@@ -174,16 +191,26 @@ const generateSourceHandles: GenerateSourceHandles = (keywordValue, nodeId, defs
     }];
 }
 
-const updateNodeHandles: UpdateNodeHandles = (nodes, nodeId, handleId, position) => {
+const updateNode: UpdateNode = (nodes, nodeId, update) => {
     const node = nodes.find(n => n.id === nodeId);
     if (!node) {
         // throw new Error(`Node with id ${nodeId} not found`);
         console.log(`Node with id ${nodeId} not found`)
         return;
     }
-    const handleDetails = { handleId: handleId, position: position }
-    node.data.targetHandles.push(handleDetails);
-}
+
+    if (update.nodeData) {
+        Object.assign(node.data.nodeData, update.nodeData);
+    }
+
+    if (update.nodeStyle) {
+        Object.assign(node.data.nodeStyle, update.nodeStyle);
+    }
+
+    if (update.addTargetHandle) {
+        node.data.targetHandles.push(update.addTargetHandle);
+    }
+};
 
 const getKeywordHandler: GetKeywordHandler = (handlerName) => {
     if (!(handlerName in keywordHandlerMap)) {
