@@ -23,6 +23,7 @@ import {
   type GraphNode,
 } from "../utils/processAST";
 import { sortAST } from "../utils/sortAST";
+import { resolveCollisions } from "../utils/resolveCollisions";
 
 const nodeTypes = { customNode: CustomNode };
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
@@ -42,6 +43,7 @@ const GraphView = ({
 
   const [nodes, setNodes, onNodeChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
+  const [collisionResolved, setCollisionResolved] = useState(false);
 
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     setExpandedNode({
@@ -120,13 +122,29 @@ const GraphView = ({
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
-  }, [
-    compiledSchema,
-    generateNodesAndEdges,
-    getLayoutedElements,
-    setNodes,
-    setEdges,
-  ]);
+
+    // important: reset collision flag when schema changes
+    setCollisionResolved(false);
+  }, [compiledSchema]);
+
+  const allNodesMeasured = useCallback((nodes: Node[]) => {
+    return (
+      nodes.length > 0 &&
+      nodes.every((n) => n.measured?.width && n.measured?.height)
+    );
+  }, []);
+
+  useEffect(() => {
+    if (collisionResolved) return;
+    if (!allNodesMeasured(nodes)) return;
+    const resolved = resolveCollisions(nodes, {
+      maxIterations: 500,
+      overlapThreshold: 0.5,
+      margin: 20,
+    });
+    setNodes(resolved);
+    setCollisionResolved(true);
+  }, [nodes, collisionResolved, allNodesMeasured, setNodes]);
 
   return (
     <div className="relative w-full h-full">
