@@ -30,6 +30,7 @@ const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
 const NODE_WIDTH = 172;
 const NODE_HEIGHT = 36;
+const HORIZONTAL_GAP = 150;
 
 const GraphView = ({
   compiledSchema,
@@ -97,11 +98,11 @@ const GraphView = ({
           // We are shifting the dagre node position (anchor=center center) to the top left
           // so it matches the React Flow node anchor point (top left).
           position: {
-            x: (nodeWithPosition.x - NODE_WIDTH / 2) + (NODE_WIDTH * node.depth),
+            x: (nodeWithPosition.x - NODE_WIDTH / 2) + ((NODE_WIDTH  + HORIZONTAL_GAP) * node.depth),
             y: (nodeWithPosition.y - NODE_HEIGHT / 2),
           },
         };
-
+        
         return newNode;
       });
 

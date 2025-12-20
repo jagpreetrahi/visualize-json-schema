@@ -44,8 +44,6 @@ export const resolveCollisions: CollisionAlgorithm = (
 ) => {
     const boxes = getBoxesFromNodes(nodes, margin);
 
-    let numIterations = 0;
-
     for (let iter = 0; iter <= maxIterations; iter++) {
         let moved = false;
 
@@ -68,31 +66,21 @@ export const resolveCollisions: CollisionAlgorithm = (
                 const px = (A.width + B.width) * 0.5 - Math.abs(dx);
                 const py = (A.height + B.height) * 0.5 - Math.abs(dy);
 
-                // Check if there's significant overlap
+                // Check if there's significant vertical overlap
                 if (px > overlapThreshold && py > overlapThreshold) {
-                    A.moved = B.moved = moved = true;
-                    // Resolve along the smallest overlap axis
-                    if (px < py) {
-                        // Move along x-axis
-                        const sx = dx > 0 ? 1 : -1;
-                        const moveAmount = (px / 2) * sx;
-                        A.x += moveAmount;
-                        B.x -= moveAmount;
-                    } else {
-                        // Move along y-axis
-                        const sy = dy > 0 ? 1 : -1;
-                        const moveAmount = (py / 2) * sy;
-                        A.y += moveAmount;
-                        B.y -= moveAmount;
-                    }
+                    moved = A.moved = B.moved = true;
+
+                    // Vertical-only resolution
+                    const direction = dy >= 0 ? 1 : -1;
+                    const moveAmount = py * 0.5;
+
+                    A.y += moveAmount * direction;
+                    B.y -= moveAmount * direction;
                 }
             }
         }
-        numIterations++;
-        // Early exit if no overlaps were found
-        if (!moved) {
-            break;
-        }
+
+        if (!moved) break;
     }
 
     const newNodes = boxes.map((box) => {
@@ -100,7 +88,7 @@ export const resolveCollisions: CollisionAlgorithm = (
             return {
                 ...box.node,
                 position: {
-                    x: box.x + margin,
+                    x: box.node.position.x, // X is preserved
                     y: box.y + margin,
                 },
             };
