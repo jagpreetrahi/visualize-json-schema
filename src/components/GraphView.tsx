@@ -23,12 +23,14 @@ import {
   type GraphNode,
 } from "../utils/processAST";
 import { sortAST } from "../utils/sortAST";
+import { resolveCollisions } from "../utils/resolveCollisions";
 
 const nodeTypes = { customNode: CustomNode };
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
-const nodeWidth = 172;
-const nodeHeight = 36;
+const NODE_WIDTH = 172;
+const NODE_HEIGHT = 36;
+const HORIZONTAL_GAP = 150;
 
 const GraphView = ({
   compiledSchema,
@@ -42,6 +44,7 @@ const GraphView = ({
 
   const [nodes, setNodes, onNodeChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
+  const [collisionResolved, setCollisionResolved] = useState(false);
 
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     setExpandedNode({
@@ -79,7 +82,7 @@ const GraphView = ({
       dagreGraph.setGraph({ rankdir: direction });
 
       nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+        dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
       });
       edges.forEach((edge) => {
         dagreGraph.setEdge(edge.source, edge.target);
@@ -95,11 +98,11 @@ const GraphView = ({
           // We are shifting the dagre node position (anchor=center center) to the top left
           // so it matches the React Flow node anchor point (top left).
           position: {
-            x: nodeWithPosition.x - nodeWidth / 2,
-            y: nodeWithPosition.y - nodeHeight / 2,
+            x: (nodeWithPosition.x - NODE_WIDTH / 2) + ((NODE_WIDTH  + HORIZONTAL_GAP) * node.depth),
+            y: (nodeWithPosition.y - NODE_HEIGHT / 2),
           },
         };
-
+        
         return newNode;
       });
 
@@ -120,13 +123,29 @@ const GraphView = ({
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
-  }, [
-    compiledSchema,
-    generateNodesAndEdges,
-    getLayoutedElements,
-    setNodes,
-    setEdges,
-  ]);
+
+    // important: reset collision flag when schema changes
+    setCollisionResolved(false);
+  }, [compiledSchema]);
+
+  const allNodesMeasured = useCallback((nodes: Node[]) => {
+    return (
+      nodes.length > 0 &&
+      nodes.every((n) => n.measured?.width && n.measured?.height)
+    );
+  }, []);
+
+  useEffect(() => {
+    if (collisionResolved) return;
+    if (!allNodesMeasured(nodes)) return;
+    const resolved = resolveCollisions(nodes, {
+      maxIterations: 500,
+      overlapThreshold: 0.5,
+      margin: 20,
+    });
+    setNodes(resolved);
+    setCollisionResolved(true);
+  }, [nodes, collisionResolved, allNodesMeasured, setNodes]);
 
   return (
     <div className="relative w-full h-full">
