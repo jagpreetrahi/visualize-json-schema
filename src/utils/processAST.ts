@@ -78,6 +78,7 @@ type UpdateNode = (nodes: GraphNode[], schemaUri: string, update: UpdateNodeOpti
 const neonColors = {
     string: "#FF6EFF", // neon magenta
     number: "#00FF95", // neon mint
+    integer: "#00FF95", // neon mint
     boolean: "#FFEA00", // neon yellow
     array: "#FF8F00", // neon amber
     object: "#00E5FF", // neon cyan
