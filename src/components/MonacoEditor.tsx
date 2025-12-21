@@ -63,7 +63,7 @@ const MonacoEditor = () => {
         message: err instanceof Error ? err.message : String(err),
       });
     }
-  }, []);
+  }, [schemaValue]);
 
   useEffect(() => {
     compileSchema(schemaValue);
