@@ -1,10 +1,34 @@
 import { Handle } from "@xyflow/react";
 import type { RFNodeData } from "../utils/processAST";
-import { useContext } from "react";
+import { useContext, useLayoutEffect, useRef, useState } from "react";
 import { AppContext } from "../contexts/AppContext";
 
-const CustomNode = ({ data }: { data: RFNodeData }) => {
+const CustomNode = ({ data, id }: { data: RFNodeData; id: string }) => {
   const { theme } = useContext(AppContext);
+
+  const rowRefs = useRef<
+    Record<string, HTMLDivElement | HTMLSpanElement | null>
+  >({});
+  const [handleOffsets, setHandleOffsets] = useState<Record<string, number>>(
+    {}
+  );
+
+  useLayoutEffect(() => {
+    const container = Object.values(rowRefs.current)[0]?.offsetParent;
+    if (!(container instanceof HTMLElement)) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const offsets: Record<string, number> = {};
+
+    for (const [key, row] of Object.entries(rowRefs.current)) {
+      if (!row) continue;
+
+      const rect = row.getBoundingClientRect();
+      offsets[key] = rect.top + rect.height / 2 - containerRect.top;
+    }
+
+    setHandleOffsets(offsets);
+  }, [data.nodeData]);
 
   return (
     <div
@@ -73,6 +97,9 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
                 <div className="flex-col w-full">
                   {(value as string[]).map((item, index) => (
                     <div
+                      ref={(el) => {
+                        rowRefs.current[`${id}-${item}`] = el;
+                      }}
                       key={index}
                       className="px-2 py-[2px] bg-[var(--node-value-bg-color)]"
                       style={{ border: `1px solid ${data.nodeStyle.color}30` }}
@@ -82,7 +109,13 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
                   ))}
                 </div>
               ) : (
-                <span>{String(value)}</span>
+                <span
+                  ref={(el) => {
+                    rowRefs.current[`${id}`] = el;
+                  }}
+                >
+                  {String(value)}
+                </span>
               )}
             </div>
           );
@@ -92,9 +125,10 @@ const CustomNode = ({ data }: { data: RFNodeData }) => {
       {data.sourceHandles.map(({ handleId, position }) => (
         <Handle
           key={handleId}
+          id={handleId}
           type="source"
           position={position}
-          id={handleId}
+          style={{ top: handleOffsets[handleId] }}
         />
       ))}
     </div>
