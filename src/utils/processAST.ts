@@ -10,6 +10,11 @@ export type GraphNode = {
     depth: number;
 };
 
+export type HandleConfig = {
+    handleId: string;
+    position: Position;
+}
+
 export type RFNodeData = {
     nodeLabel: string,
     isBooleanNode: boolean,
@@ -52,11 +57,6 @@ type KeywordHandlerParams = [
     nodeDepth: number,
     renderedNodes?: string[],
 ];
-
-export type HandleConfig = {
-    handleId: string;
-    position: Position;
-}
 
 type UpdateNodeOptionalParameters = Partial<{
     nodeData: Record<string, unknown>,
