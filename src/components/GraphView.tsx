@@ -68,6 +68,7 @@ const GraphView = ({
         nodes,
         edges,
         parentId: "root",
+        childId: null,
         nodeTitle: "root",
       });
 
@@ -98,11 +99,14 @@ const GraphView = ({
           // We are shifting the dagre node position (anchor=center center) to the top left
           // so it matches the React Flow node anchor point (top left).
           position: {
-            x: (nodeWithPosition.x - NODE_WIDTH / 2) + ((NODE_WIDTH  + HORIZONTAL_GAP) * node.depth),
-            y: (nodeWithPosition.y - NODE_HEIGHT / 2),
+            x:
+              nodeWithPosition.x -
+              NODE_WIDTH / 2 +
+              (NODE_WIDTH + HORIZONTAL_GAP) * node.depth,
+            y: nodeWithPosition.y - NODE_HEIGHT / 2,
           },
         };
-        
+
         return newNode;
       });
 
@@ -126,7 +130,13 @@ const GraphView = ({
 
     // important: reset collision flag when schema changes
     setCollisionResolved(false);
-  }, [compiledSchema]);
+  }, [
+    compiledSchema,
+    generateNodesAndEdges,
+    getLayoutedElements,
+    setEdges,
+    setNodes,
+  ]);
 
   const allNodesMeasured = useCallback((nodes: Node[]) => {
     return (

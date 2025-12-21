@@ -111,7 +111,7 @@ const CustomNode = ({ data, id }: { data: RFNodeData; id: string }) => {
               ) : (
                 <span
                   ref={(el) => {
-                    rowRefs.current[`${id}`] = el;
+                    rowRefs.current[`${id}-${key}`] = el;
                   }}
                 >
                   {String(value)}
