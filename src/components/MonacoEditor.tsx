@@ -11,7 +11,7 @@ import {
 } from "@hyperjump/json-schema/experimental";
 import * as monaco from "monaco-editor";
 import Editor from "@monaco-editor/react";
-import schema from "../data/defaultSchema.json";
+import schema from "../data/defaultJSONSchema.json";
 import { AppContext } from "../contexts/AppContext";
 import SchemaVisualization from "./SchemaVisualization";
 import FullscreenToggleButton from "./FullscreenToggleButton";
