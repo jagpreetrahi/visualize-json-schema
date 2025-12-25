@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="./public/logo.svg" alt="JSON Schema Visualizer logo">
+  <img src="./public/logo-light.svg#gh-light-mode-only" alt="JSON Schema Visualizer logo">
+  <img src="./public/logo-dark.svg#gh-dark-mode-only" alt="JSON Schema Visualizer logo">
 </p>
 
 # JSON Schema Visualizer
