@@ -73,9 +73,10 @@ const SchemaVisualization = ({
       </div>
       <div className="absolute bottom-[10px] right-[10px] z-10">
         <img
-          src={trustBadge}
+          src="trust-badge.svg"
           alt="Local-only processing"
           className="w-9 h-9"
+          draggable="false"
           data-tooltip-id="local-only-tooltip"
         />
       </div>

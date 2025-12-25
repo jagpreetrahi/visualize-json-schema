@@ -11,9 +11,10 @@ const NavigationBar = () => {
     <nav className="h-[10vh] flex justify-between items-center shadow-lg relative z-10">
       <div className="flex items-center">
         <img
-          src="logo.png"
+          src={theme === "dark" ? "logo-dark.svg" : "logo-light.svg"}
           alt="Visualize JSON Schema logo"
           className="w-12 h-12 md:w-16 md:h-16"
+          draggable="false"
         />
         <span className="flex flex-col text-center text-lg leading-none font-semibold text-[var(--tool-name-color)] space-y-1">
           <span>JSON Schema</span>
