@@ -1,4 +1,4 @@
-import { BsGithub, BsMoonStars, BsSearch, BsSun } from "react-icons/bs";
+import { BsGithub, BsMoonStars, BsBook, BsSun } from "react-icons/bs";
 import { useContext } from "react";
 import { Tooltip } from "react-tooltip";
 import { AppContext } from "../contexts/AppContext";
@@ -22,11 +22,7 @@ const NavigationBar = () => {
       </div>
       <ul className="flex gap-5 mr-10">
         <li>
-          <button
-            aria-label="Toggle Theme"
-            className="text-xl cursor-pointer"
-            onClick={toggleTheme}
-          >
+          <button className="text-xl cursor-pointer" onClick={toggleTheme}>
             {theme === "light" ? (
               <BsSun className="text-[var(--navigation-text-color)]" />
             ) : (
@@ -41,23 +37,29 @@ const NavigationBar = () => {
             rel="noopener noreferrer"
             className="text-xl"
             data-tooltip-id="github"
-            data-tooltip-content="Star on Github"
           >
             <BsGithub className="text-[var(--navigation-text-color)]" />
-            <Tooltip id="github" />
+            <Tooltip
+              id="github"
+              content="Star on Github"
+              style={{ fontSize: "10px" }}
+            />
           </a>
         </li>
         <li>
           <a
-            href="https://www.learnjsonschema.com/2020-12/"
+            href="https://github.com/jagpreetrahi/visualize-json-schema?tab=readme-ov-file#json-schema-visualizer"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xl"
             data-tooltip-id="learn-keywords"
-            data-tooltip-content="Explore Keywords"
           >
-            <BsSearch className="text-[var(--navigation-text-color)]" />
-            <Tooltip id="learn-keywords" />
+            <BsBook className="text-[var(--navigation-text-color)]" />
+            <Tooltip
+              id="learn-keywords"
+              content="Docs"
+              style={{ fontSize: "10px" }}
+            />
           </a>
         </li>
         <li>
