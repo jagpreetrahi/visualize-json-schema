@@ -6,6 +6,34 @@
 
 A visual, interactive, graph-based tool to explore, debug, and understand complex JSON Schemas.
 
+JSON Schema Visualizer is a browser-based tool that converts JSON Schema into an interactive node graph. It helps developers understand deeply nested schemas, `$ref` chains, reusable `$defs`, and circular references
+without manually tracing large JSON Schema files.
+
+---
+
+## Table of Contents
+
+- [Why JSON Schema Visualizer?](#why-json-schema-visualizer)
+- [Features](#features)
+- [Demo](#demo)
+  - [Example JSON Schema](#example-json-schema)
+- [Understanding the Visualization](#understanding-the-visualization)
+  - [Node colors & schema types](#node-colors--schema-types)
+  - [Keywords & edges](#keywords--edges)
+  - [$defs (reusable schemas)](#defs-reusable-schemas)
+  - [Boolean schemas](#boolean-schemas)
+  - [Controls](#controls)
+- [How It Works](#how-it-works)
+- [Current Limitations / Known Issues](#current-limitations--known-issues)
+- [Run locally](#run-locally)
+  - [Using Docker (recommended)](#using-docker-recommended)
+  - [Running directly (without Docker)](#running-directly-without-docker)
+- [Tech Stack](#tech-stack)
+- [Future Enhancements / Roadmap](#future-enhancements--roadmap)
+- [Contributing](#contributing)
+  - [Getting started](#getting-started)
+- [Additional Notes](#additional-notes)
+
 ---
 
 ## Why JSON Schema Visualizer?
@@ -28,7 +56,7 @@ JSON Schemas become difficult to reason about as they grow:
 - Circular reference handling
 - Clear node & edge representation for schema entities
 - Light & dark theme support
-- Runs entirely locally (no data leaves your device)
+- Runs fully in your browser -- all data stays on your device
 
 ---
 
@@ -280,4 +308,4 @@ Ways to contribute:
 > The application supports both **light** and **dark** themes. For the best visual experience -- we recommend using the **dark theme**.
 
 > [!IMPORTANT]
->All data processing occurs **locally on your device.** No data is sent to or processed on external servers.
+> All data processing occurs **locally on your device.** No data is sent to or processed on external servers.
