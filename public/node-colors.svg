@@ -1,0 +1,64 @@
+<svg width="810" height="200" xmlns="http://www.w3.org/2000/svg">
+<style>
+  .object-node { rx: 3; ry: 3; stroke-width: 3; }
+  .boolean-node { rx: 15; ry: 15; stroke-width: 1; }
+
+  .node-text {
+    font-family: monospace;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-weight: bold;
+
+    fill: #ffffff;              /* light text */
+    stroke: rgba(0, 0, 0, 0.6);  /* dark outline */
+    stroke-width: 1px;
+    paint-order: stroke fill;   /* ensures stroke renders behind text */
+  }
+</style>
+
+  <!-- Object Nodes Title -->
+  <text class="node-text" x="405" y="25" font-size="20" font-weight="bold" text-anchor="middle">Object Nodes</text>
+
+  <!-- Object Node 1: string -->
+  <rect x="10" y="40" width="90" height="50" class="object-node" fill="#FF6EFF" stroke="#FF6EFF" opacity="0.85"/>
+  <text x="55" y="65" class="node-text">string</text>
+
+  <!-- Object Node 2: numeric -->
+  <rect x="110" y="40" width="90" height="50" class="object-node" fill="#00FF95" stroke="#00FF95" opacity="0.85"/>
+  <text x="155" y="65" class="node-text">numeric</text>
+
+    <!-- Object Node 3: boolean -->
+  <rect x="210" y="40" width="90" height="50" class="object-node" fill="#FFEA00" stroke="#FFEA00" opacity="0.85"/>
+  <text x="255" y="65" class="node-text">boolean</text>
+
+  <!-- Object Node 4: array -->
+  <rect x="310" y="40" width="90" height="50" class="object-node" fill="#FF8F00" stroke="#FF8F00" opacity="0.85"/>
+  <text x="355" y="65" class="node-text">array</text>
+
+  <!-- Object Node 5: object -->
+  <rect x="410" y="40" width="90" height="50" class="object-node" fill="#00E5FF" stroke="#00E5FF" opacity="0.85"/>
+  <text x="455" y="65" class="node-text">object</text>
+
+  <!-- Object Node 6: null -->
+  <rect x="510" y="40" width="90" height="50" class="object-node" fill="#A259FF" stroke="#A259FF" opacity="0.85"/>
+  <text x="555" y="65" class="node-text">null</text>
+
+  <!-- Object Node 7: reference -->
+  <rect x="610" y="40" width="90" height="50" class="object-node" fill="#FFE1BD" stroke="#FFE1BD" opacity="0.85"/>
+  <text x="655" y="65" class="node-text">reference</text>
+
+  <!-- Object Node 8: others -->
+  <rect x="710" y="40" width="90" height="50" class="object-node" fill="#CCCCCC" stroke="#CCCCCC" opacity="0.85"/>
+  <text x="755" y="65" class="node-text">others</text>
+
+  <!-- Boolean Nodes Title -->
+  <text class="node-text" x="405" y="120" font-size="20" font-weight="bold" text-anchor="middle">Boolean Nodes</text>
+
+  <!-- Boolean Node true -->
+  <rect x="310" y="140" width="90" height="50" class="boolean-node" fill="#12FF4B" stroke="#12FF4B" rx="20" ry="20" opacity="0.85"/>
+  <text x="355" y="165" class="node-text">true</text>
+
+  <!-- Boolean Node false -->
+  <rect x="410" y="140" width="90" height="50" class="boolean-node" fill="#FF3B3B" stroke="#FF3B3B" rx="20" ry="20" opacity="0.85"/>
+  <text x="455" y="165" class="node-text">false</text>
+</svg>

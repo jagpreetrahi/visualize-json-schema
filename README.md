@@ -134,37 +134,9 @@ _This diagram shows the structure of the "Example JSON Schema" above._
   - In most cases, inference is correct.
   - If multiple instance types are defined (e.g., `type: ["string", "number"]`), there is currently no dedicated color. In such cases, the node color is determined based on **type inference**, following this priority order: `object > array > string > number`.
   - If inference fails entirely, a **soft gray** color is applied to the corresponding node as a fallback.
-- Refer to the table below for node color references:
+- Refer to the image below for node color references:  
+  <img src="./public/node-colors.svg" alt="JSON Schema Visualizer logo">
 
-    <table>
-    <tr>
-        <td>string</td>
-        <td>numeric</td>
-        <td>array</td>
-        <td>object</td>
-        <td>null</td>
-        <td>reference</td>
-        <td>others</td>
-        <td>booleanSchema</td>
-    </tr>
-    <tr>
-        <td style="background-color:#FF6EFF; color:#000; text-align:center;">neon magenta</td>
-        <td style="background-color:#00FF95; color:#000; text-align:center;">neon mint</td>
-        <td style="background-color:#FF8F00; color:#000; text-align:center;">neon amber</td>
-        <td style="background-color:#00E5FF; color:#000; text-align:center;">neon cyan</td>
-        <td style="background-color:#A259FF; color:#fff; text-align:center;">neon purple</td>
-        <td style="background-color:#FFE1BD; color:#000; text-align:center;">neon apricot</td>
-        <td style="background-color:#CCCCCC; color:#000; text-align:center;">neon gray</td>
-            <td>
-        <table style="width:100%; border-collapse: collapse;">
-            <tr>
-            <td style="background-color:#12FF4B; color:#000; text-align:center;">true</td>
-            <td style="background-color:#FF3B3B; color:#fff; text-align:center;">false</td>
-            </tr>
-        </table>
-        </td>
-    </tr>
-    </table>
 
 ### Keywords & edges
 
