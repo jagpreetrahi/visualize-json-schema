@@ -35,35 +35,38 @@ const MonacoEditor = () => {
       JSON.stringify(schema, null, 2)
   );
 
-  const compileSchema = useCallback(async (value: string | undefined) => {
-    if (!value) return;
+  const compileSchema = useCallback(
+    async (value: string | undefined) => {
+      if (!value) return;
 
-    let schemaId: string;
-    try {
-      setValidationState({ status: "idle" });
-      const parsedSchema = JSON.parse(value);
-      schemaId = parsedSchema.$id;
+      let schemaId: string;
+      try {
+        setValidationState({ status: "idle" });
+        const parsedSchema = JSON.parse(value);
+        schemaId = parsedSchema.$id;
 
-      unregisterSchema(schemaId);
-      registerSchema(parsedSchema, schemaId);
+        unregisterSchema(schemaId);
+        registerSchema(parsedSchema, schemaId);
 
-      const schemaDocument = await getSchema(schemaId);
-      const compiledSchema = await compile(schemaDocument);
+        const schemaDocument = await getSchema(schemaId);
+        const compiledSchema = await compile(schemaDocument);
 
-      setCompiledSchema(compiledSchema);
-      setValidationState({ status: "valid" });
-      if (value !== schemaValue) {
-        setSchemaValue(value);
+        setCompiledSchema(compiledSchema);
+        setValidationState({ status: "valid" });
+        if (value !== schemaValue) {
+          setSchemaValue(value);
+        }
+        window.sessionStorage.setItem("JSON Schema", value);
+      } catch (err) {
+        setCompiledSchema(null);
+        setValidationState({
+          status: "error",
+          message: err instanceof Error ? err.message : String(err),
+        });
       }
-      window.sessionStorage.setItem("JSON Schema", value);
-    } catch (err) {
-      setCompiledSchema(null);
-      setValidationState({
-        status: "error",
-        message: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }, [schemaValue]);
+    },
+    [schemaValue]
+  );
 
   useEffect(() => {
     compileSchema(schemaValue);
@@ -77,7 +80,7 @@ const MonacoEditor = () => {
   );
 
   return (
-    <div ref={containerRef} className="h-[85vh] flex flex-col">
+    <div ref={containerRef} className="h-[92vh] flex flex-col">
       {isFullScreen && (
         <div className="w-full px-1 bg-[var(--view-bg-color)] justify-items-end">
           <div className="text-[var(--view-text-color)]">

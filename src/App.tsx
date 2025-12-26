@@ -1,4 +1,4 @@
-import BottomBar from "./components/BottomBar";
+// import BottomBar from "./components/BottomBar";
 import NavigationBar from "./components/NavigationBar";
 import MonacoEditor from "./components/MonacoEditor";
 import { AppProvider } from "./contexts/AppProvider";
@@ -10,7 +10,7 @@ function App() {
     <AppProvider>
       <NavigationBar />
       <MonacoEditor />
-      <BottomBar />
+      {/* <BottomBar /> */}
     </AppProvider>
   );
 }
