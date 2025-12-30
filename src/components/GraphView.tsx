@@ -118,10 +118,22 @@ const GraphView = ({
 
   const animatedEdges = useMemo(
     () =>
-      edges.map((edge) => ({
-        ...edge,
-        animated: edge.id === hoveredEdgeId || edge.selected === true,
-      })),
+      edges.map((edge) => {
+        const isHovered = edge.id === hoveredEdgeId;
+        const isSelected = edge.selected;
+        const isActive = isHovered || isSelected;
+        const strokeColor = isActive ? edge.color : "#666";
+        const strokeWidth = isActive ? 2.5 : 1;
+        return {
+          ...edge,
+          animated: isActive,
+          style: {
+            ...edge.style,
+            stroke: strokeColor,
+            strokeWidth: strokeWidth,
+          },
+        };
+      }),
     [edges, hoveredEdgeId]
   );
 

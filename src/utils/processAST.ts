@@ -31,6 +31,7 @@ type NodeStyle = {
 export type GraphEdge = {
     id: string;
     type: string;
+    color: string;
     source: string;
     target: string;
     sourceHandle: string;
@@ -97,6 +98,8 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
         edges.push({
             id: `${parentId}--${sourceHandle}--${schemaUri}--${targetHandle}`,
             type: "smoothstep",
+            // TODO: pass the color of the targeted node instead of handcoded value
+            color: "#CCCCCC",
             source: parentId,
             target: schemaUri,
             sourceHandle: sourceHandle,
@@ -160,6 +163,7 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
     edges.push({
         id: `${parentId}--${sourceHandle}--${schemaUri}--${targetHandle}`,
         type: "smoothstep",
+        color,
         source: parentId,
         target: schemaUri,
         sourceHandle: sourceHandle,
