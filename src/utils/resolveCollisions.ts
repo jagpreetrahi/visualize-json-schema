@@ -1,4 +1,4 @@
-import type { Node } from '@xyflow/react';
+import type { GraphNode } from './processAST';
 
 export type CollisionAlgorithmOptions = {
     maxIterations: number;
@@ -7,9 +7,9 @@ export type CollisionAlgorithmOptions = {
 };
 
 export type CollisionAlgorithm = (
-    nodes: Node[],
+    nodes: GraphNode[],
     options: CollisionAlgorithmOptions,
-) => Node[];
+) => GraphNode[];
 
 type Box = {
     x: number;
@@ -17,10 +17,10 @@ type Box = {
     width: number;
     height: number;
     moved: boolean;
-    node: Node;
+    node: GraphNode;
 };
 
-function getBoxesFromNodes(nodes: Node[], margin: number = 0): Box[] {
+function getBoxesFromNodes(nodes: GraphNode[], margin: number = 0): Box[] {
     const boxes: Box[] = new Array(nodes.length);
 
     for (let i = 0; i < nodes.length; i++) {

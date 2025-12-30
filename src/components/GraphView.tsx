@@ -10,8 +10,6 @@ import {
   useEdgesState,
   Position,
   BackgroundVariant,
-  type Node,
-  type Edge,
   type NodeMouseHandler,
 } from "@xyflow/react";
 
@@ -42,8 +40,8 @@ const GraphView = ({
     data: Record<string, unknown>;
   } | null>(null);
 
-  const [nodes, setNodes, onNodeChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
+  const [nodes, setNodes, onNodeChange] = useNodesState<GraphNode>([]);
+  const [edges, setEdges, onEdgeChange] = useEdgesState<GraphEdge>([]);
   const [collisionResolved, setCollisionResolved] = useState(false);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
 
@@ -93,7 +91,7 @@ const GraphView = ({
 
       const newNodes = nodes.map((node) => {
         const nodeWithPosition = dagreGraph.node(node.id);
-        const newNode: Node = {
+        const newNode: GraphNode = {
           ...node,
           targetPosition: isHorizontal ? Position.Left : Position.Top,
           sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
@@ -122,7 +120,7 @@ const GraphView = ({
         const isHovered = edge.id === hoveredEdgeId;
         const isSelected = edge.selected;
         const isActive = isHovered || isSelected;
-        const strokeColor = isActive ? edge.color : "#666";
+        const strokeColor = isActive ? edge.data.color : "#666";
         const strokeWidth = isActive ? 2.5 : 1;
         return {
           ...edge,
@@ -160,7 +158,7 @@ const GraphView = ({
     setNodes,
   ]);
 
-  const allNodesMeasured = useCallback((nodes: Node[]) => {
+  const allNodesMeasured = useCallback((nodes: GraphNode[]) => {
     return (
       nodes.length > 0 &&
       nodes.every((n) => n.measured?.width && n.measured?.height)
