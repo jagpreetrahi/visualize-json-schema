@@ -1,14 +1,14 @@
-import type { AST, Node } from "@hyperjump/json-schema/experimental";
+import type { AST, Node as HJNode } from "@hyperjump/json-schema/experimental";
 import { toAbsoluteIri } from "@hyperjump/uri";
-import { Position } from "@xyflow/react";
+import { Position, type Node as RFNode, type Edge as RFEdge } from "@xyflow/react";
 import { inferSchemaType } from "./inferSchemaType";
 
-export type GraphNode = {
-    id: string;
-    type: string;
+export type GraphNode = RFNode & {
     data: RFNodeData;
     depth: number;
 };
+
+type UnpositionedGraphNode = Omit<GraphNode, "position">;
 
 export type HandleConfig = {
     handleId: string;
@@ -28,18 +28,16 @@ type NodeStyle = {
     color: string
 }
 
-export type GraphEdge = {
-    id: string;
-    source: string;
-    target: string;
-    sourceHandle: string;
-    targetHandle: string;
+export type GraphEdge = RFEdge & {
+    data: {
+        color: string;
+    }
 };
 
 type ProcessASTParams = {
     ast: AST,
     schemaUri: string,
-    nodes: GraphNode[],
+    nodes: UnpositionedGraphNode[],
     edges: GraphEdge[],
     parentId: string,
     nodeTitle: string,
@@ -51,7 +49,7 @@ type ProcessASTParams = {
 type KeywordHandlerParams = [
     ast: AST,
     keywordValue: unknown,
-    nodes: GraphNode[],
+    nodes: UnpositionedGraphNode[],
     edges: GraphEdge[],
     parentId: string,
     nodeDepth: number,
@@ -72,7 +70,7 @@ type CreateBasicKeywordHandler = (key: string) => KeywordHandler;
 type GetArrayFromNumber = (number: number) => number[];
 type GetSourceHandle = (parentId: string, childId: string | null) => string;
 type GenerateSourceHandles = (key: string | undefined, value: unknown, nodeId: string, defs: boolean | undefined) => HandleConfig[];
-type UpdateNode = (nodes: GraphNode[], schemaUri: string, update: UpdateNodeOptionalParameters) => void;
+type UpdateNode = (nodes: UnpositionedGraphNode[], schemaUri: string, update: UpdateNodeOptionalParameters) => void;
 
 
 const neonColors = {
@@ -95,6 +93,9 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
         const targetHandle = `${sourceHandle}-target`;
         edges.push({
             id: `${parentId}--${sourceHandle}--${schemaUri}--${targetHandle}`,
+            type: "smoothstep",
+            // TODO: pass the color of the targeted node instead of handcoded value
+            data: { color: "#CCCCCC" },
             source: parentId,
             target: schemaUri,
             sourceHandle: sourceHandle,
@@ -108,7 +109,7 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
         return;
     }
 
-    const schemaNodes: boolean | Node<unknown>[] = ast[schemaUri];
+    const schemaNodes: boolean | HJNode<unknown>[] = ast[schemaUri];
     const nodeData: Record<string, unknown> = {};
     const sourceHandles: HandleConfig[] = [];
     const targetHandles: HandleConfig[] = [];
@@ -157,6 +158,8 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
 
     edges.push({
         id: `${parentId}--${sourceHandle}--${schemaUri}--${targetHandle}`,
+        type: "smoothstep",
+        data: { color },
         source: parentId,
         target: schemaUri,
         sourceHandle: sourceHandle,
