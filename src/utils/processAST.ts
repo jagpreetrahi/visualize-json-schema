@@ -30,6 +30,7 @@ type NodeStyle = {
 
 export type GraphEdge = {
     id: string;
+    type: string;
     source: string;
     target: string;
     sourceHandle: string;
@@ -95,6 +96,7 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
         const targetHandle = `${sourceHandle}-target`;
         edges.push({
             id: `${parentId}--${sourceHandle}--${schemaUri}--${targetHandle}`,
+            type: "smoothstep",
             source: parentId,
             target: schemaUri,
             sourceHandle: sourceHandle,
@@ -157,6 +159,7 @@ export const processAST: ProcessAST = ({ ast, schemaUri, nodes, edges, parentId,
 
     edges.push({
         id: `${parentId}--${sourceHandle}--${schemaUri}--${targetHandle}`,
+        type: "smoothstep",
         source: parentId,
         target: schemaUri,
         sourceHandle: sourceHandle,
