@@ -168,6 +168,8 @@ const GraphView = ({
         deleteKeyCode={null}
         nodeTypes={nodeTypes}
         fitView
+        minZoom={0.05}
+        maxZoom={5}
       >
         <Background
           id="main-grid"
