@@ -114,9 +114,23 @@ const GraphView = ({
     []
   );
 
+  // TODO: check if the following approach to bringing the selected edge to the top has any significant performance issues
+  // check if logic can be optimised
+  const orderedEdges = useMemo(() => {
+    const normal: typeof edges = [];
+    const selected: typeof edges = [];
+
+    for (const edge of edges) {
+      if (edge.selected) selected.push(edge);
+      else normal.push(edge);
+    }
+
+    return [...normal, ...selected];
+  }, [edges]);
+
   const animatedEdges = useMemo(
     () =>
-      edges.map((edge) => {
+      orderedEdges.map((edge) => {
         const isHovered = edge.id === hoveredEdgeId;
         const isSelected = edge.selected;
         const isActive = isHovered || isSelected;
@@ -132,7 +146,7 @@ const GraphView = ({
           },
         };
       }),
-    [edges, hoveredEdgeId]
+    [orderedEdges, hoveredEdgeId]
   );
 
   useEffect(() => {
