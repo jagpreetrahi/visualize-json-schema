@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import type { CompiledSchema } from "@hyperjump/json-schema/experimental";
 import "@xyflow/react/dist/style.css";
 import dagre from "@dagrejs/dagre";
@@ -45,6 +45,7 @@ const GraphView = ({
   const [nodes, setNodes, onNodeChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgeChange] = useEdgesState<Edge>([]);
   const [collisionResolved, setCollisionResolved] = useState(false);
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
 
   const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
     setExpandedNode({
@@ -115,6 +116,15 @@ const GraphView = ({
     []
   );
 
+  const animatedEdges = useMemo(
+    () =>
+      edges.map((edge) => ({
+        ...edge,
+        animated: edge.id === hoveredEdgeId || edge.selected === true,
+      })),
+    [edges, hoveredEdgeId]
+  );
+
   useEffect(() => {
     const result = generateNodesAndEdges(compiledSchema);
     if (!result) return;
@@ -161,7 +171,7 @@ const GraphView = ({
     <div className="relative w-full h-full">
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={animatedEdges}
         onNodeClick={onNodeClick}
         onNodesChange={onNodeChange}
         onEdgesChange={onEdgeChange}
@@ -170,6 +180,8 @@ const GraphView = ({
         fitView
         minZoom={0.05}
         maxZoom={5}
+        onEdgeMouseEnter={(_, edge) => setHoveredEdgeId(edge.id)}
+        onEdgeMouseLeave={() => setHoveredEdgeId(null)}
       >
         <Background
           id="main-grid"
