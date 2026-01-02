@@ -1,20 +1,20 @@
 <p align="center">
-  <img src="./public/logo-light.svg#gh-light-mode-only" alt="JSON Schema Visualizer logo">
-  <img src="./public/logo-dark.svg#gh-dark-mode-only" alt="JSON Schema Visualizer logo">
+  <img src="./public/logo-light.svg#gh-light-mode-only" alt="JSON Schema Studio logo">
+  <img src="./public/logo-dark.svg#gh-dark-mode-only" alt="JSON Schema Studio logo">
 </p>
 
-# JSON Schema Visualizer
+# JSON Schema Studio
 
 A visual, interactive, graph-based tool to explore, debug, and understand complex JSON Schemas.
 
-JSON Schema Visualizer is a browser-based tool that converts JSON Schema into an interactive node graph. It helps developers understand deeply nested schemas, `$ref` chains, reusable `$defs`, and circular references
+**JSON Schema Studio** is a browser-based tool that converts JSON Schema into an interactive node graph. It helps developers understand deeply nested schemas, `$ref` chains, reusable `$defs`, and circular references
 without manually tracing large JSON Schema files.
 
 ---
 
 ## Table of Contents
 
-- [Why JSON Schema Visualizer?](#why-json-schema-visualizer)
+- [Why JSON Schema Studio?](#why-json-schema-studio)
 - [Features](#features)
 - [Demo](#demo)
   - [Example JSON Schema](#example-json-schema)
@@ -37,7 +37,7 @@ without manually tracing large JSON Schema files.
 
 ---
 
-## Why JSON Schema Visualizer?
+## Why JSON Schema Studio?
 
 JSON Schemas become difficult to reason about as they grow:
 
@@ -46,7 +46,7 @@ JSON Schemas become difficult to reason about as they grow:
 - Circular references
 - Unclear relationships between subschemas
 
-**JSON Schema Visualizer** converts schemas into an interactive graph so you can **see structure, references, and relationships** instantly, instead of mentally parsing large JSON Schema files.
+**JSON Schema Studio** converts schemas into an interactive graph so you can **see structure, references, and relationships** instantly, instead of mentally parsing large JSON Schema files.
 
 ---
 
@@ -136,8 +136,7 @@ _This diagram shows the structure of the "Example JSON Schema" above._
   - If multiple instance types are defined (e.g., `type: ["string", "number"]`), there is currently no dedicated color. In such cases, the node color is determined based on **type inference**, following this priority order: `object > array > string > number`.
   - If inference fails entirely, a **soft gray** color is applied to the corresponding node as a fallback.
 - Refer to the image below for node color references:  
-  <img src="./public/node-colors.svg" alt="JSON Schema Visualizer logo">
-
+  <img src="./public/node-colors.svg" alt="JSON Schema Studio logo">
 
 ### Keywords & edges
 
@@ -200,15 +199,15 @@ You can run the application locally either directly or using Docker (recommended
 
 - Build the Docker image using the `Dockerfile` at the root of the repository:
   ```bash
-  docker build --no-cache -t visualize-json-schema -f ./Dockerfile .
+  docker build --no-cache -t json-schema-studio -f ./Dockerfile .
   ```
 - Run the Docker container:
   ```bash
-  docker run -p 8080:80 visualize-json-schema
+  docker run -p 8080:80 json-schema-studio
   ```
 - To run the container in detached mode, use:
   ```
-  docker run -d -p 8080:80 visualize-json-schema
+  docker run -d -p 8080:80 json-schema-studio
   ```
 - Access the application in your browser at http://localhost:8080.
 
