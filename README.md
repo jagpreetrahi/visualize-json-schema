@@ -193,6 +193,7 @@ Design improvements are welcome :)
 
 ## Current Limitations / Known Issues
 
+- Currently, it only supports visualization for the latest dialect (2020-12).
 - The **search** feature is visible in the UI but not yet implemented.
 - When editing a schema in real time, the node handles may appear misaligned.  
   **Workaround**: Refresh the page after editing to restore correct handle positions.
