@@ -138,15 +138,25 @@ _This diagram shows the structure of the "Example JSON Schema" above._
 - Refer to the image below for node color references:  
   <img src="./public/node-colors.svg" alt="JSON Schema Studio logo">
 
-### Keywords & edges
+### Keywords
 
 - Keywords displayed inside a node represent how that schema defines the instance.
 - If a keyword's value is itself a subschema, a new node is created.
-- The child node is connected to the parent by an edge:
-  - Edges originate from the left side of the parent node, aligned vertically near the keyword they represent.
-  - ⚠️ There is a known issue with precise source-handle positioning (see _Known Issues_).
 
-### $defs (reusable schemas)
+### Edges
+
+- Each child node is connected to its parent via a directed edge.
+- Edges originate from the left side of the parent node, vertically aligned with the specific schema keyword they represent (for example: `properties`, `items`, `allOf`, etc.).
+- On hover, the corresponding edge is highlighted and an animated flow is rendered:
+  - the animation starts from the edge's source handle (keyword-aligned origin)
+    and runs toward the connected child node, visually indicating direction.
+- On click, the highlighted state is persisted:
+  - the animation remains active even after hover ends.
+- Multiple edges can be selected and highlighted simultaneously.
+
+⚠️ There is a known issue with precise source-handle positioning (the exact point from which an edge originates) (see _Current Limitations / Known Issues_).
+
+### Reusable schemas (`$defs`)
 
 - If a schema contains `$defs`, a special "definitions" container node is created.
 - This node:
