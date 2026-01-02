@@ -9,18 +9,24 @@ const NavigationBar = () => {
 
   return (
     <nav className="h-[8vh] flex justify-between items-center shadow-lg relative z-10">
-      <div className="flex items-center">
+      <div className="flex items-center text-center select-none">
         <img
           src={theme === "dark" ? "logo-dark.svg" : "logo-light.svg"}
-          alt="Visualize JSON Schema logo"
-          className="w-12 h-12 md:w-16 md:h-16"
+          alt="Studio JSON Schema"
+          className="w-15 h-15 md:w-15 md:h-15"
           draggable="false"
         />
-        <span className="flex flex-col text-center text-lg leading-none font-semibold text-[var(--tool-name-color)] space-y-1">
-          <span>JSON Schema</span>
-          <span>Visualization </span>
-        </span>
+
+        <div className="flex font-mono flex-col">
+          <span className="text-2xl font-bold  text-[var(--tool-name-color)]">
+            Studio
+          </span>
+          <span className="text-xs opacity-70 text-[var(--tool-name-color)]">
+            JSON Schema
+          </span>
+        </div>
       </div>
+
       <ul className="flex gap-5 mr-10">
         <li>
           <button className="text-xl cursor-pointer" onClick={toggleTheme}>
