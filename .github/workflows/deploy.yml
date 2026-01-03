@@ -7,6 +7,10 @@ on:
   workflow_dispatch:
 
 
+concurrency:
+  group: website-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pages: write
@@ -17,25 +21,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: skip deployment for doc/CI-only changes
+      run: |
+        CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+        echo "$CHANGED_FILES"
+
+        if echo "$CHANGED_FILES" | grep -Ev '^(\\.github/|.*\\.md$)' | grep -q .; then
+          exit 0
+        else
+          exit 1
+        fi
 
     - name: Setup Node.js
+      if: success()
       uses: actions/setup-node@v4
       with:
-        node-version: "20"
+        node-version: lts/*
         cache: npm
 
-    - name: Install Dependencies
-      run: npm ci
-
-    - name: Build application
-      run: npm run build
+    - name: Install Dependencies and Build application
+      if: success()
+      run: |
+        npm ci
+        npm run build
 
     - name: Upload build artifact
+      if: success()
       uses: actions/upload-pages-artifact@v3
       with:
         path: dist
 
     - name: Deploy to GitHub Pages
+      if: success()
       uses: actions/deploy-pages@v4

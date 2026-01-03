@@ -1,0 +1,36 @@
+name: Create Tag
+
+on:
+  push:
+    branches:
+    - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: skip release for doc/CI-only changes
+      run: |
+        CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+        echo "$CHANGED_FILES"
+
+        if echo "$CHANGED_FILES" | grep -Ev '^(\\.github/|.*\\.md$)' | grep -q .; then
+          exit 0
+        else
+          exit 1
+        fi
+
+    - name: Create tag
+      run: |
+        VERSION=$(cat VERSION.txt)
+        git tag "v${VERSION}"
+        git push origin "v${VERSION}"
