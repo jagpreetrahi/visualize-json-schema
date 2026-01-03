@@ -1,4 +1,4 @@
-name: Build & Deploy JSON Schema Studio
+name: Deploy and Release
 
 on:
   push:
@@ -15,17 +15,18 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 jobs:
-  deploy:
+  deploy-and-release:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -33,7 +34,7 @@ jobs:
         node-version: lts/*
         cache: npm
 
-    - name: Install Dependencies and Build application
+    - name: Install Dependencies and Build
       run: |
         npm ci
         npm run build
@@ -45,3 +46,28 @@ jobs:
 
     - name: Deploy to GitHub Pages
       uses: actions/deploy-pages@v4
+
+    - name: Create Tag and Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Read version from file
+        VERSION=$(cat VERSION.txt)
+        TAG_NAME="v${VERSION}"
+
+        # Check if tag already exists to avoid errors on re-runs
+        if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+          echo "Tag $TAG_NAME already exists. Skipping release creation."
+        else
+          # Create and push the tag
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+
+          # Create the GitHub Release using the GitHub CLI (gh)
+          # --generate-notes automatically creates the changelog
+          gh release create "$TAG_NAME" \
+            --title "Release $TAG_NAME" \
+            --generate-notes
+        fi
