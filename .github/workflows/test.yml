@@ -1,0 +1,51 @@
+name: PR Checks (Smart VERSION enforcement)
+
+on:
+  pull_request:
+    branches:
+    - main
+    paths-ignore:
+    - ".github/**"
+    - "**.md"
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Ensure VERSION file was changed
+      run: |
+        if git diff --name-only origin/main...HEAD | grep -q "^VERSION.txt$"; then
+          echo "✅ VERSION.txt file changed"
+        else
+          echo "❌ VERSION must be bumped for app changes"
+          exit 1
+        fi
+
+    - name: Validate VERSION format
+      run: |
+        VERSION=$(cat VERSION.txt)
+
+        if echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z]+)?$'; then
+          echo "✅ VERSION format valid: $VERSION"
+        else
+          echo "❌ Invalid VERSION format: $VERSION"
+          echo "Expected: MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-prerelease"
+          exit 1
+        fi
+
+    - name: Ensure VERSION is new
+      run: |
+        VERSION=$(cat VERSION.txt)
+
+        if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+          echo "❌ Version v$VERSION already exists"
+          exit 1
+        else
+          echo "✅ Version v$VERSION is new"
+        fi

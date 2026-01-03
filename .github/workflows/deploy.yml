@@ -4,8 +4,15 @@ on:
   push:
     branches:
     - main
+    paths-ignore:
+    - ".github/**"
+    - "**.md"
   workflow_dispatch:
 
+
+concurrency:
+  group: website-deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -17,20 +24,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: "20"
+        node-version: lts/*
         cache: npm
 
-    - name: Install Dependencies
-      run: npm ci
-
-    - name: Build application
-      run: npm run build
+    - name: Install Dependencies and Build application
+      run: |
+        npm ci
+        npm run build
 
     - name: Upload build artifact
       uses: actions/upload-pages-artifact@v3

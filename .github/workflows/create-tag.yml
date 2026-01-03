@@ -1,0 +1,26 @@
+name: Create Tag
+
+on:
+  push:
+    branches:
+    - main
+    paths-ignore:
+    - ".github/**"
+    - "**.md"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Create tag
+      run: |
+        VERSION=$(cat VERSION.txt)
+        git tag "v${VERSION}"
+        git push origin "v${VERSION}"
