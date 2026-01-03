@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
     - main
+    paths-ignore:
+    - ".github/**"
+    - "**.md"
 
 jobs:
   version-check:
@@ -15,21 +18,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Skip VERSION checks for doc/CI-only changes
-      run: |
-        git fetch origin main
-        CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
-        echo "Changed files:"
-        echo "$CHANGED_FILES"
-
-        if echo "$CHANGED_FILES" | grep -Ev '^(\\.github/|.*\\.md$)' | grep -q .; then
-          exit 0
-        else
-          exit 1
-        fi
-
     - name: Ensure VERSION file was changed
-      if: success()
       run: |
         if git diff --name-only origin/main...HEAD | grep -q "^VERSION.txt$"; then
           echo "✅ VERSION.txt file changed"
@@ -39,7 +28,6 @@ jobs:
         fi
 
     - name: Validate VERSION format
-      if: success()
       run: |
         VERSION=$(cat VERSION.txt)
 
@@ -52,7 +40,6 @@ jobs:
         fi
 
     - name: Ensure VERSION is new
-      if: success()
       run: |
         VERSION=$(cat VERSION.txt)
 
