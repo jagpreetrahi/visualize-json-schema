@@ -29,13 +29,22 @@ const NavigationBar = () => {
 
       <ul className="flex gap-5 mr-10">
         <li>
-          <button className="text-xl cursor-pointer" onClick={toggleTheme}>
+          <button
+            className="text-xl cursor-pointer"
+            onClick={toggleTheme}
+            data-tooltip-id="toggle-theme"
+          >
             {theme === "light" ? (
               <BsSun className="text-[var(--navigation-text-color)]" />
             ) : (
               <BsMoonStars className="text-[var(--navigation-text-color)]" />
             )}
           </button>
+          <Tooltip
+            id="toggle-theme"
+            content="Better visuals in dark mode"
+            style={{ fontSize: "10px" }}
+          />
         </li>
         <li>
           <a
