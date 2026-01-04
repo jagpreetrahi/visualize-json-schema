@@ -68,6 +68,6 @@ jobs:
           # Create the GitHub Release using the GitHub CLI (gh)
           # --generate-notes automatically creates the changelog
           gh release create "$TAG_NAME" \
-            --title "Release $TAG_NAME" \
+            --title "$TAG_NAME" \
             --generate-notes
         fi

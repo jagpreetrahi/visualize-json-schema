@@ -18,7 +18,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Ensure VERSION file was changed
+    - name: Ensure VERSION.txt file was changed
       run: |
         if git diff --name-only origin/main...HEAD | grep -q "^VERSION.txt$"; then
           echo "✅ VERSION.txt file changed"
