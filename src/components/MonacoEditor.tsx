@@ -32,6 +32,15 @@ const DEFAULT_SCHEMA_ID = "https://studio.ioflux.org/schema";
 const DEFAULT_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema";
 const SESSION_STORAGE_KEY = "ioflux.schema.editor.content";
 
+const JSON_SCHEMA_DIALECTS = [
+  "https://json-schema.org/draft/2020-12/schema",
+  "https://json-schema.org/draft/2019-09/schema",
+  "http://json-schema.org/draft-07/schema#",
+  "http://json-schema.org/draft-06/schema#",
+  "http://json-schema.org/draft-04/schema#",
+] as const;
+const SUPPORTED_DIALECTS = ["https://json-schema.org/draft/2020-12/schema"];
+
 const VALIDATION_UI = {
   success: {
     message: "✓ Valid JSON Schema",
@@ -79,6 +88,13 @@ const MonacoEditor = () => {
         const dialect = parsedSchema.$schema;
         const dialectVersion = dialect ?? DEFAULT_SCHEMA_DIALECT;
         const schemaId = parsedSchema.$id ?? DEFAULT_SCHEMA_ID;
+
+        if (
+          JSON_SCHEMA_DIALECTS.includes(dialectVersion) &&
+          !SUPPORTED_DIALECTS.includes(dialectVersion)
+        ) {
+          throw new Error(`Dialect "${dialectVersion}" is not supported yet.`);
+        }
 
         const schemaDocument = buildSchemaDocument(
           parsedSchema as SchemaObject,
