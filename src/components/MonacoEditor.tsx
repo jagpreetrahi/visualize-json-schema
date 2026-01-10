@@ -71,7 +71,7 @@ const MonacoEditor = () => {
   useEffect(() => {
     if (!schemaText.trim()) return;
 
-    (async () => {
+    const timeout = setTimeout(async () => {
       try {
         // INFO: parsedSchema is mutated by buildSchemaDocument function
         const parsedSchema = JSON.parse(schemaText);
@@ -118,7 +118,9 @@ const MonacoEditor = () => {
           message: VALIDATION_UI["error"].message + message,
         });
       }
-    })();
+    }, 300);
+
+    return () => clearTimeout(timeout);
   }, [schemaText]);
 
   return (
