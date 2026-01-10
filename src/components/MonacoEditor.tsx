@@ -28,26 +28,31 @@ type CreateBrowser = (
   _cache: Record<string, SchemaDocument>;
 };
 
+const DEFAULT_SCHEMA_ID = "https://studio.ioflux.org/schema";
+const DEFAULT_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema";
+const SESSION_STORAGE_KEY = "ioflux.schema.editor.content";
+
+const VALIDATION_UI = {
+  success: {
+    message: "✓ Valid JSON Schema",
+    className: "text-green-400 font-semibold",
+  },
+  warning: {
+    message: `⚠ Schema dialect not provided. Using default dialect: ${DEFAULT_SCHEMA_DIALECT}`,
+    className: "text-yellow-400",
+  },
+  error: {
+    message: "✗ ",
+    className: "text-red-400",
+  },
+};
+
 const MonacoEditor = () => {
   const { theme, isFullScreen, containerRef } = useContext(AppContext);
 
   const [compiledSchema, setCompiledSchema] = useState<CompiledSchema | null>(
     null
   );
-
-  const DEFAULT_DIALECT_VERSION =
-    "https://json-schema.org/draft/2020-12/schema";
-  const DEFAULT_SCHEMA_ID = "https://studio.ioflux.org/schema";
-  const SESSION_STORAGE_KEY = "JSON Schema";
-  const VALIDATION_MESSAGE = {
-    success: "✓ Valid JSON Schema",
-    warning: `⚠ Schema dialect not provided. Using default dialect, that is ${DEFAULT_DIALECT_VERSION}`,
-  };
-  const statusClassMap: Record<ValidationStatus["status"], string> = {
-    error: "text-red-400",
-    warning: "text-yellow-400",
-    success: "text-green-400 font-semibold",
-  };
 
   const [schemaText, setSchemaText] = useState<string>(
     window.sessionStorage.getItem(SESSION_STORAGE_KEY)?.trim() ??
@@ -56,7 +61,7 @@ const MonacoEditor = () => {
 
   const [schemaValidation, setSchemaValidation] = useState<ValidationStatus>({
     status: "success",
-    message: VALIDATION_MESSAGE["success"],
+    message: VALIDATION_UI["success"].message,
   });
 
   useEffect(() => {
@@ -72,7 +77,7 @@ const MonacoEditor = () => {
         const parsedSchema = JSON.parse(schemaText);
 
         const dialect = parsedSchema.$schema;
-        const dialectVersion = dialect ?? DEFAULT_DIALECT_VERSION;
+        const dialectVersion = dialect ?? DEFAULT_SCHEMA_DIALECT;
         const schemaId = parsedSchema.$id ?? DEFAULT_SCHEMA_ID;
 
         const schemaDocument = buildSchemaDocument(
@@ -98,11 +103,11 @@ const MonacoEditor = () => {
           !dialect && typeof parsedSchema !== "boolean"
             ? {
                 status: "warning",
-                message: VALIDATION_MESSAGE["warning"],
+                message: VALIDATION_UI["warning"].message,
               }
             : {
                 status: "success",
-                message: VALIDATION_MESSAGE["success"],
+                message: VALIDATION_UI["success"].message,
               }
         );
       } catch (err) {
@@ -110,7 +115,7 @@ const MonacoEditor = () => {
 
         setSchemaValidation({
           status: "error",
-          message,
+          message: VALIDATION_UI["error"].message + message,
         });
       }
     })();
@@ -137,7 +142,7 @@ const MonacoEditor = () => {
             onChange={(value) => setSchemaText(value ?? "")}
           />
           <div className="flex-1 p-2 bg-[var(--validation-bg-color)] text-sm overflow-y-auto">
-            <div className={statusClassMap[schemaValidation.status]}>
+            <div className={VALIDATION_UI[schemaValidation.status].className}>
               {schemaValidation.message}
             </div>
           </div>
