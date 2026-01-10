@@ -95,14 +95,14 @@ const MonacoEditor = () => {
 
         setCompiledSchema(await compile(schema));
         setSchemaValidation(
-          dialect
+          !dialect && typeof parsedSchema !== "boolean"
             ? {
-                status: "success",
-                message: VALIDATION_MESSAGE["success"],
-              }
-            : {
                 status: "warning",
                 message: VALIDATION_MESSAGE["warning"],
+              }
+            : {
+                status: "success",
+                message: VALIDATION_MESSAGE["success"],
               }
         );
       } catch (err) {
