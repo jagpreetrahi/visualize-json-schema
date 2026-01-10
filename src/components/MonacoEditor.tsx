@@ -1,16 +1,15 @@
 import { useContext, useState, useEffect } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import {
-  registerSchema,
-  unregisterSchema,
-  type SchemaObject,
-} from "@hyperjump/json-schema/draft-2020-12";
+// INFO: modifying the following import statement to (import type { SchemaObject } from "@hyperjump/json-schema/draft-2020-12") creates error;
+import { type SchemaObject } from "@hyperjump/json-schema/draft-2020-12";
 import {
   getSchema,
   compile,
-  type CompiledSchema,
   buildSchemaDocument,
+  type CompiledSchema,
+  type SchemaDocument,
 } from "@hyperjump/json-schema/experimental";
+
 import Editor from "@monaco-editor/react";
 import defaultSchema from "../data/defaultJSONSchema.json";
 import { AppContext } from "../contexts/AppContext";
@@ -20,6 +19,13 @@ import FullscreenToggleButton from "./FullscreenToggleButton";
 type ValidationStatus = {
   status: "success" | "warning" | "error";
   message: string;
+};
+
+type CreateBrowser = (
+  id: string,
+  schemaDoc: SchemaDocument
+) => {
+  _cache: Record<string, SchemaDocument>;
 };
 
 const MonacoEditor = () => {
@@ -62,31 +68,34 @@ const MonacoEditor = () => {
 
     (async () => {
       try {
+        // INFO: parsedSchema is mutated by buildSchemaDocument function
         const parsedSchema = JSON.parse(schemaText);
 
-        const dialectVersion = parsedSchema.$schema ?? DEFAULT_DIALECT_VERSION;
+        const dialect = parsedSchema.$schema;
+        const dialectVersion = dialect ?? DEFAULT_DIALECT_VERSION;
         const schemaId = parsedSchema.$id ?? DEFAULT_SCHEMA_ID;
 
         const schemaDocument = buildSchemaDocument(
-          parsedSchema,
+          parsedSchema as SchemaObject,
           schemaId,
           dialectVersion
         );
 
-        const createBrowser = (id) => {
+        const createBrowser: CreateBrowser = (id, schemaDoc) => {
           return {
             _cache: {
-              [id]: schemaDocument,
+              [id]: schemaDoc,
             },
           };
         };
 
-        const browser = createBrowser(schemaId);
+        const browser = createBrowser(schemaId, schemaDocument);
+        // @ts-expect-error
         const schema = await getSchema(schemaDocument.baseUri, browser);
 
         setCompiledSchema(await compile(schema));
         setSchemaValidation(
-          parsedSchema.$schema
+          dialect
             ? {
                 status: "success",
                 message: VALIDATION_MESSAGE["success"],
