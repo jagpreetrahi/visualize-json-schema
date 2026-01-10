@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/user-profile",
+  "$id": "https://studio.ioflux.org/schema",
   "description": "A JSON Schema describing a person",
   "type": "object",
   "properties": {

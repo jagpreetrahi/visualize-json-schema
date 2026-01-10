@@ -9,6 +9,7 @@ import {
   getSchema,
   compile,
   type CompiledSchema,
+  buildSchemaDocument,
 } from "@hyperjump/json-schema/experimental";
 import Editor from "@monaco-editor/react";
 import defaultSchema from "../data/defaultJSONSchema.json";
@@ -28,12 +29,13 @@ const MonacoEditor = () => {
     null
   );
 
-  const DEFAULT_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema";
-  const DEFAULT_SCHEMA_ID = "https://example.com/schema";
+  const DEFAULT_DIALECT_VERSION =
+    "https://json-schema.org/draft/2020-12/schema";
+  const DEFAULT_SCHEMA_ID = "https://studio.ioflux.org/schema";
   const SESSION_STORAGE_KEY = "JSON Schema";
   const VALIDATION_MESSAGE = {
     success: "✓ Valid JSON Schema",
-    warning: `⚠ Schema dialect not provided. Using default dialect, that is ${DEFAULT_SCHEMA_DIALECT}`,
+    warning: `⚠ Schema dialect not provided. Using default dialect, that is ${DEFAULT_DIALECT_VERSION}`,
   };
   const statusClassMap: Record<ValidationStatus["status"], string> = {
     error: "text-red-400",
@@ -60,19 +62,31 @@ const MonacoEditor = () => {
 
     (async () => {
       try {
-        const parsed = JSON.parse(schemaText);
+        const parsedSchema = JSON.parse(schemaText);
 
-        const schemaDialect = parsed.$schema ?? DEFAULT_SCHEMA_DIALECT;
-        const schemaId = parsed.$id ?? DEFAULT_SCHEMA_ID;
+        const dialectVersion = parsedSchema.$schema ?? DEFAULT_DIALECT_VERSION;
+        const schemaId = parsedSchema.$id ?? DEFAULT_SCHEMA_ID;
 
-        unregisterSchema(schemaId);
-        registerSchema(parsed, schemaId, schemaDialect);
+        const schemaDocument = buildSchemaDocument(
+          parsedSchema,
+          schemaId,
+          dialectVersion
+        );
 
-        const schemaDoc = await getSchema(schemaId);
+        const createBrowser = (id) => {
+          return {
+            _cache: {
+              [id]: schemaDocument,
+            },
+          };
+        };
 
-        setCompiledSchema(await compile(schemaDoc));
+        const browser = createBrowser(schemaId);
+        const schema = await getSchema(schemaDocument.baseUri, browser);
+
+        setCompiledSchema(await compile(schema));
         setSchemaValidation(
-          parsed.$schema
+          parsedSchema.$schema
             ? {
                 status: "success",
                 message: VALIDATION_MESSAGE["success"],
