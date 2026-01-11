@@ -71,3 +71,5 @@ jobs:
             --title "$TAG_NAME" \
             --generate-notes
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
